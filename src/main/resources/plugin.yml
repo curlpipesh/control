@@ -1,0 +1,57 @@
+name: SpaceControl
+main: net.spacemc.control.SpaceControl
+version: 0.1.0
+description: SpaceMC's plugin for banning and whatnot
+authors: [skirts, sage]
+website: http://curlpipesh.me/
+depend: [SpaceUtils, Essentials]
+
+commands:
+  audit: #
+    description: Shows all punishments issued by a player
+    usage: /<command> <player>
+    default: op
+  ban: #
+    description: Bans a player
+    usage: /<command> <player> [length] [reason]
+    default: op
+  banip:
+    description: Bans an IP
+    usage: /<command> <player|IP> [length] [reason]
+    default: op
+  cmute: #
+    description: Prevents a player from using commands
+    usage: /<command> <player> [length] [reason]
+    default: op
+  history: #
+    description: Shows all punishments for a player
+    usage: /<command> <player>
+    default: op
+  mute:
+    description: Prevents a player from sending messages
+    usage: /<command> <player> [length] [reason]
+    default: op
+  unban:
+    description: Unbans a player
+    usage: /<command> <player>
+    default: op
+  unbanip:
+    description: Unbans an IP
+    usage: /<command> <player|IP>
+    default: op
+  uncmute:
+    description: Undoes a command-mute
+    usage: /<command> <player>
+    default: op
+  unmute:
+    description: Unmutes a player
+    usage: /<command> <player>
+    default: op
+  warn:
+    description: Issues a warning to a player
+    usage: /<command> <player> [reason]
+    default: op
+  warns:
+    description: Shows all warnings for a player
+    usage: /<command> <player>
+    default: op
