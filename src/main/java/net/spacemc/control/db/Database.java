@@ -8,6 +8,7 @@ import net.spacemc.control.punishment.Punishment;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -53,24 +54,14 @@ public abstract class Database {
         }
     }
 
-    protected final boolean execute(String s) {
+    protected final boolean execute(PreparedStatement s) {
         try {
-            Statement statement = connection.createStatement();
-            statement.execute(s);
-            statement.close();
-            commit();
-            return true;
+            boolean state = s.execute();
+            s.close();
+            return state;
         } catch(SQLException e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    public final void commit() {
-        try {
-            getConnection().commit();
-        } catch(SQLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -80,11 +71,9 @@ public abstract class Database {
 
     public abstract boolean initialize();
 
-    public abstract List<Punishment> getPunishmentsForUUID(@NonNull UUID uuid);
+    public abstract List<Punishment> getPunishments(@NonNull String target);
 
-    public abstract List<Punishment> getPunishmentsForIP(@NonNull String ip);
-
-    public abstract List<Punishment> getPunishmentsByUUID(@NonNull UUID uuid);
+    public abstract List<Punishment> getPunishmentsBy(@NonNull String issuer);
 
     public abstract boolean insertPunishment(@NonNull Punishment p);
 

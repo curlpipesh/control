@@ -2,6 +2,7 @@ package net.spacemc.control.punishment;
 
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import net.spacemc.control.SpaceControl;
 
 import java.text.ParseException;
@@ -14,6 +15,7 @@ import java.util.UUID;
  * @since 8/23/15.
  */
 @Data
+@ToString
 public class Punishment {
     private SpaceControl control;
     private int id;

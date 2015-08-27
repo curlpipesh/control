@@ -15,7 +15,7 @@ commands:
     description: Bans a player
     usage: /<command> <player> [length] [reason]
     default: op
-  banip:
+  banip: #
     description: Bans an IP
     usage: /<command> <player|IP> [length] [reason]
     default: op
@@ -27,23 +27,23 @@ commands:
     description: Shows all punishments for a player
     usage: /<command> <player>
     default: op
-  mute:
+  mute: #
     description: Prevents a player from sending messages
     usage: /<command> <player> [length] [reason]
     default: op
-  unban:
+  unban: #
     description: Unbans a player
     usage: /<command> <player>
     default: op
-  unbanip:
+  unbanip: #
     description: Unbans an IP
     usage: /<command> <player|IP>
     default: op
-  uncmute:
+  uncmute: #
     description: Undoes a command-mute
     usage: /<command> <player>
     default: op
-  unmute:
+  unmute: #
     description: Unmutes a player
     usage: /<command> <player>
     default: op

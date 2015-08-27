@@ -45,6 +45,12 @@ public class SpaceControl extends JavaPlugin {
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public void onEnable() {
+        if(!this.getDataFolder().exists()) {
+            getLogger().info("Data folder doesn't exist, making...");
+            if(this.getDataFolder().mkdir()) {
+                getLogger().info("Data folder made!");
+            }
+        }
         // Connect to dbs
         if(activePunishments.connect() && inactivePunishments.connect()) {
             getLogger().info("Connected to the databases!");
@@ -79,41 +85,45 @@ public class SpaceControl extends JavaPlugin {
             throw new IllegalStateException("Unable to connect to the databases!");
         }
         // Schedule the task to remove expired punishments and transfer them to the inactive db
+        // Also automate adding active punishments to the active lists
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             List<Punishment> expired = activePunishments.getExpiredPunishments();
             expired.stream().forEach(p -> {
+                getLogger().info("Removing inactive punishment: " + p.toString());
                 activePunishments.removePunishment(p);
                 switch(p.getType()) {
                     case Punishments.BAN:
-                        bans.add(p.getTarget());
+                        bans.remove(p.getTarget());
                         break;
                     case Punishments.COMMAND_MUTE:
-                        cmutes.add(p.getTarget());
+                        cmutes.remove(p.getTarget());
                         break;
                     case Punishments.MUTE:
-                        mutes.add(p.getTarget());
+                        mutes.remove(p.getTarget());
                         break;
                     case Punishments.IP_BAN:
-                        ipBans.add(p.getTarget());
+                        ipBans.remove(p.getTarget());
                         break;
                     default:
                         break;
                 }
                 inactivePunishments.insertPunishment(p);
             });
-        }, 0L, 1200L);
+        }, 0L, 20L);
 
         // Register event listener to handle mutes/bans
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onPlayerChatEvent(AsyncPlayerChatEvent e) {
-                if(mutes.contains(e.getPlayer().getUniqueId().toString())) {
+                String uuid = e.getPlayer().getUniqueId().toString();
+                String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(mutes.contains(uuid) || mutes.contains(ip)) {
                     if(!e.getMessage().startsWith("/")) {
                         e.setCancelled(true);
                     }
                 }
-                if(cmutes.contains(e.getPlayer().getUniqueId().toString())) {
+                if(cmutes.contains(uuid) || cmutes.contains(ip)) {
                     if(e.getMessage().startsWith("/")) {
                         e.setCancelled(true);
                     }
@@ -124,21 +134,30 @@ public class SpaceControl extends JavaPlugin {
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
                 if(bans.contains(e.getUniqueId().toString())) {
-                    List<Punishment> p = activePunishments.getPunishmentsForUUID(e.getUniqueId());
+                    List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned: §r" + p.get(0).getReason() + " \nExpires: " + p.get(0).getEnd());
                 }
                 if(ipBans.contains(e.getAddress().toString())) {
-                    List<Punishment> p = activePunishments.getPunishmentsForIP(e.getAddress().toString());
+                    List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned: §r" + p.get(0).getReason() + " \nExpires: " + p.get(0).getEnd());
                 }
             }
         }, this);
         // Set up commands
+
+        // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
-        getCommand("ban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN));
-        getCommand("cmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE));
-        getCommand("ipban").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN));
         getCommand("history").setExecutor(new CommandHistory(this));
+        // Punishment commands
+        getCommand("ban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN));
+        getCommand("banip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN));
+        getCommand("cmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE));
+        getCommand("mute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE));
+        // Undo commands
+        getCommand("unban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN, true));
+        getCommand("unbanip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true));
+        getCommand("uncmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE, true));
+        getCommand("unmute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE, true));
     }
 
     public void onDisable() {

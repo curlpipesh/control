@@ -25,8 +25,8 @@ public class CommandAudit extends CCommand {
             User essUser;
             if((essUser = getEssentials().getOfflineUser(playerName)) != null) {
                 List<Punishment> punishments = new ArrayList<>();
-                punishments.addAll(getControl().getInactivePunishments().getPunishmentsByUUID(essUser.getConfigUUID()));
-                punishments.addAll(getControl().getActivePunishments().getPunishmentsByUUID(essUser.getConfigUUID()));
+                punishments.addAll(getControl().getInactivePunishments().getPunishments(essUser.getConfigUUID().toString()));
+                punishments.addAll(getControl().getActivePunishments().getPunishments(essUser.getConfigUUID().toString()));
                 if(punishments.size() > 0) {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7's stats:");
                     commandSender.sendMessage("§7------------------------------------");

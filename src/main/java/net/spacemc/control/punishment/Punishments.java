@@ -19,6 +19,6 @@ public interface Punishments {
             case WARN:
                 return "warned";
         }
-        return "somehow punished";
+        return "punished";
     }
 }
