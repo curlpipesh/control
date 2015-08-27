@@ -5,6 +5,7 @@ import lombok.Getter;
 import net.spacemc.control.SpaceControl;
 import net.spacemc.control.punishment.Punishments;
 import net.spacemc.control.util.TimeUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 import pw.slacks.space.util.SpaceUtils;
@@ -26,7 +27,9 @@ public abstract class CCommand implements CommandExecutor {
     }
 
     protected final void announce(String issuer, String player, String punishment, String reason, String length) {
-        SpaceUtils.broadcastMessage(String.format("§7%s §c%s§7 %s for %s: %s", issuer,
-                Punishments.punishmentToEnglish(punishment), player, TimeUtil.english(length), reason));
+        String m = String.format("§7%s §c%s§7 %s for %s: %s", issuer,
+                Punishments.punishmentToEnglish(punishment), player, TimeUtil.english(length), reason);
+        SpaceUtils.broadcastMessage(m);
+        Bukkit.getConsoleSender().sendMessage(m);
     }
 }

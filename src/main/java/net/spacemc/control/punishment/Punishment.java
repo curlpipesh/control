@@ -18,9 +18,8 @@ public class Punishment {
     private SpaceControl control;
     private int id;
     private String type;
-    private UUID issuer;
-    private UUID target;
-    private String targetIP;
+    private String issuer;
+    private String target;
     private String reason;
     private int length;
     private String start;
@@ -32,15 +31,8 @@ public class Punishment {
         this.control = control;
         this.id = id;
         this.type = type;
-        this.issuer = UUID.fromString(issuer);
-        try {
-            this.target = UUID.fromString(target);
-        } catch(IllegalArgumentException e) {
-            control.getLogger().warning("*** Likely from trying to parse an IP as a UUID; you can ignore this ***");
-            e.printStackTrace();
-            this.target = null;
-            this.targetIP = target;
-        }
+        this.issuer = issuer;
+        this.target = target;
         this.reason = reason;
         this.length = length;
         this.start = start;

@@ -2,7 +2,6 @@ package net.spacemc.control.commands;
 
 import com.earth2me.essentials.User;
 import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishments;
 import net.spacemc.control.util.TimeUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,12 +10,17 @@ import sun.net.util.IPAddressUtil;
 
 /**
  * @author audrey
- * @since 8/23/15.
+ * @since 8/26/15.
  */
-@Deprecated
-public class CommandCMute extends CCommand {
-    public CommandCMute(SpaceControl control) {
+@SuppressWarnings("unused")
+public class GenericPunishmentCommand extends CCommand {
+    private String type;
+    private boolean punishIP;
+
+    public GenericPunishmentCommand(SpaceControl control, String type) {
         super(control);
+        this.type = type;
+        punishIP = type.startsWith("IP_");
     }
 
     @Override
@@ -33,7 +37,7 @@ public class CommandCMute extends CCommand {
                 }
             }
 
-            String reason = "§cCommand-mute§7";
+            String reason = "§c" + type + "§7";
             if(t) {
                 if(args.length > 2) {
                     reason = "";
@@ -52,23 +56,22 @@ public class CommandCMute extends CCommand {
                 }
             }
             if((essUser = getEssentials().getOfflineUser(target)) != null) {
+                String finalTarget = punishIP ? essUser.getBase().getAddress().getHostName() : essUser.getConfigUUID().toString();
                 getControl().getActivePunishments()
-                        .insertPunishment(Punishments.COMMAND_MUTE,
+                        .insertPunishment(type,
                                 commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                 essUser.getConfigUUID().toString(), reason, time);
                 getControl().getCmutes().add(essUser.getConfigUUID().toString());
-                announce(commandSender.getName(), essUser.getName(), Punishments.COMMAND_MUTE, reason, "" + time);
+                announce(commandSender.getName(), finalTarget, type, reason, "" + time);
                 return true;
             } else {
-                // Is it an IP?
                 if(IPAddressUtil.isIPv4LiteralAddress(target)) {
                     getControl().getActivePunishments()
-                            .insertPunishment(Punishments.COMMAND_MUTE,
+                            .insertPunishment(type,
                                     commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                     target, reason, time);
                     getControl().getCmutes().add(target);
-                    String hiddenIP = target.replaceFirst("\\.[0-9]{1,3}\\.[0-9]{1,3}$", ".XXX.XXX");
-                    announce(commandSender.getName(), hiddenIP, Punishments.COMMAND_MUTE, reason, "" + time);
+                    announce(commandSender.getName(), hideIP(target), type, reason, "" + time);
                 } else {
                     commandSender.sendMessage("§7\"§a" + args[0] + "§7\" is not a valid target!");
                 }
@@ -77,5 +80,9 @@ public class CommandCMute extends CCommand {
         } else {
             return false;
         }
+    }
+
+    private String hideIP(String ip) {
+        return ip.trim().replaceFirst("\\.[0-9]{1,3}\\.[0-9]{1,3}$", ".XXX.XXX");
     }
 }

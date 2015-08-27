@@ -1,9 +1,7 @@
 package net.spacemc.control;
 
 import lombok.Getter;
-import net.spacemc.control.commands.CommandAudit;
-import net.spacemc.control.commands.CommandBan;
-import net.spacemc.control.commands.CommandHistory;
+import net.spacemc.control.commands.*;
 import net.spacemc.control.db.Database;
 import net.spacemc.control.db.SQLiteDB;
 import net.spacemc.control.punishment.Punishment;
@@ -18,7 +16,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -33,13 +30,13 @@ public class SpaceControl extends JavaPlugin {
     private final Database inactivePunishments = new SQLiteDB(this, "inactive_punishments");
 
     @Getter
-    private List<UUID> mutes = new CopyOnWriteArrayList<>();
+    private List<String> mutes = new CopyOnWriteArrayList<>();
 
     @Getter
-    private List<UUID> cmutes = new CopyOnWriteArrayList<>();
+    private List<String> cmutes = new CopyOnWriteArrayList<>();
 
     @Getter
-    private List<UUID> bans = new CopyOnWriteArrayList<>();
+    private List<String> bans = new CopyOnWriteArrayList<>();
 
     @Getter
     private List<String> ipBans = new CopyOnWriteArrayList<>();
@@ -66,8 +63,8 @@ public class SpaceControl extends JavaPlugin {
                         case Punishments.MUTE:
                             mutes.add(p.getTarget());
                             break;
-                        case Punishments.IPBAN:
-                            ipBans.add(p.getTargetIP());
+                        case Punishments.IP_BAN:
+                            ipBans.add(p.getTarget());
                             break;
                         default:
                             getLogger().warning("I don't know what \"" + p.getType() + "\" warning type is?");
@@ -96,8 +93,8 @@ public class SpaceControl extends JavaPlugin {
                     case Punishments.MUTE:
                         mutes.add(p.getTarget());
                         break;
-                    case Punishments.IPBAN:
-                        ipBans.add(p.getTargetIP());
+                    case Punishments.IP_BAN:
+                        ipBans.add(p.getTarget());
                         break;
                     default:
                         break;
@@ -111,12 +108,12 @@ public class SpaceControl extends JavaPlugin {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onPlayerChatEvent(AsyncPlayerChatEvent e) {
-                if(mutes.contains(e.getPlayer().getUniqueId())) {
+                if(mutes.contains(e.getPlayer().getUniqueId().toString())) {
                     if(!e.getMessage().startsWith("/")) {
                         e.setCancelled(true);
                     }
                 }
-                if(cmutes.contains(e.getPlayer().getUniqueId())) {
+                if(cmutes.contains(e.getPlayer().getUniqueId().toString())) {
                     if(e.getMessage().startsWith("/")) {
                         e.setCancelled(true);
                     }
@@ -126,7 +123,7 @@ public class SpaceControl extends JavaPlugin {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
-                if(bans.contains(e.getUniqueId())) {
+                if(bans.contains(e.getUniqueId().toString())) {
                     List<Punishment> p = activePunishments.getPunishmentsForUUID(e.getUniqueId());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned: §r" + p.get(0).getReason() + " \nExpires: " + p.get(0).getEnd());
                 }
@@ -138,7 +135,9 @@ public class SpaceControl extends JavaPlugin {
         }, this);
         // Set up commands
         getCommand("audit").setExecutor(new CommandAudit(this));
-        getCommand("ban").setExecutor(new CommandBan(this));
+        getCommand("ban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN));
+        getCommand("cmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE));
+        getCommand("ipban").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN));
         getCommand("history").setExecutor(new CommandHistory(this));
     }
 

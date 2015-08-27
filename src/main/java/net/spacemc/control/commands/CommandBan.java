@@ -17,6 +17,7 @@ import java.util.Date;
  * @author audrey
  * @since 8/23/15.
  */
+@Deprecated
 public class CommandBan extends CCommand {
     public CommandBan(SpaceControl control) {
         super(control);
@@ -56,10 +57,10 @@ public class CommandBan extends CCommand {
                 }
                 getControl().getActivePunishments()
                         .insertPunishment(Punishments.BAN,
-                                commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "d9d85884-61dc-4925-aace-4e20f77ca03f", // Luv ya Slacks <3
+                                commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                 essUser.getConfigUUID().toString(), reason, time);
                 Player p = Bukkit.getPlayer(essUser.getConfigUUID());
-                getControl().getBans().add(p.getUniqueId());
+                getControl().getBans().add(p.getUniqueId().toString());
                 Date date = new Date();
                 Calendar c = Calendar.getInstance();
                 c.setTime(date);
@@ -73,7 +74,7 @@ public class CommandBan extends CCommand {
                         e.printStackTrace();
                     }
                 }
-                announce(commandSender.getName(), essUser.getName(), Punishments.COMMAND_MUTE, reason, t ? args[1] : "t:" + Integer.MAX_VALUE + "d");
+                announce(commandSender.getName(), essUser.getName(), Punishments.COMMAND_MUTE, reason, "" + time);
                 return true;
             } else {
                 commandSender.sendMessage("§7\"§a" + args[0] + "§7\" was not recognized as a player!");

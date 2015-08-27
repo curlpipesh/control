@@ -170,8 +170,8 @@ public class SQLiteDB extends Database {
     public boolean insertPunishment(@NonNull Punishment p) {
         lastPunishmentId = p.getId() - 1;
         return execute(String.format("INSERT INTO %s VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                getDatabaseName(), ++lastPunishmentId, p.getType(), p.getIssuer().toString(),
-                p.getTarget() != null ? p.getTarget() : p.getTargetIP(), p.getReason(), p.getLength(),
+                getDatabaseName(), ++lastPunishmentId, p.getType(), p.getIssuer(),
+                p.getTarget(), p.getReason(), p.getLength(),
                 p.getStart(), p.getEnd()));
     }
 

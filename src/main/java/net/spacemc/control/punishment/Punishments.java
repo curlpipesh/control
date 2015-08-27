@@ -6,7 +6,7 @@ package net.spacemc.control.punishment;
  */
 @SuppressWarnings("unused")
 public interface Punishments {
-    String BAN = "Ban", MUTE = "Mute", COMMAND_MUTE = "Command mute", IPBAN = "IP ban", WARN = "Warning";
+    String BAN = "Ban", MUTE = "Mute", COMMAND_MUTE = "Command mute", IP_BAN = "IP ban", WARN = "Warning";
 
     static String punishmentToEnglish(String punishment) {
         switch(punishment) {
