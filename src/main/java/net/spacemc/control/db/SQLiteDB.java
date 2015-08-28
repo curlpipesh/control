@@ -173,6 +173,8 @@ public class SQLiteDB extends Database {
         calendar.add(Calendar.MINUTE, lengthInMinutes);
         end = calendar.getTime();
 
+        String endFormatted = lengthInMinutes == Integer.MAX_VALUE ? "Forever" : getControl().getFormat().format(end);
+
         try {
             PreparedStatement s = getConnection().prepareStatement(String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
@@ -182,10 +184,10 @@ public class SQLiteDB extends Database {
             s.setString(5, reason);
             s.setInt(6, lengthInMinutes);
             s.setString(7, getControl().getFormat().format(now));
-            s.setString(8, getControl().getFormat().format(end));
+            s.setString(8, endFormatted);
             execute(s);
             return Optional.of(new Punishment(getControl(), lastPunishmentId, type, issuer, target, reason, lengthInMinutes,
-                    getControl().getFormat().format(now), getControl().getFormat().format(end)));
+                    getControl().getFormat().format(now), endFormatted));
         } catch(SQLException e) {
             e.printStackTrace();
             return Optional.<Punishment>empty();

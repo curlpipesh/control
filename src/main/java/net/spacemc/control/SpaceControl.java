@@ -62,7 +62,6 @@ public class SpaceControl extends JavaPlugin {
                 // Load active mutes/cmutes/bans
                 List<Punishment> all = activePunishments.getAllPunishments();
                 all.stream().forEach(p -> {
-                    System.out.println(p);
                     switch(p.getType()) {
                         case Punishments.BAN:
                             bans.add(p.getTarget());
@@ -90,6 +89,8 @@ public class SpaceControl extends JavaPlugin {
         }
         // Schedule the task to remove expired punishments and transfer them to the inactive db
         // Also automate adding active punishments to the active lists
+        // Checks every second because fuck TPS I guess? It's not like there's gonna be millions of rows selected...
+        // I hope (. _ . )
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             List<Punishment> expired = activePunishments.getExpiredPunishments();
             expired.stream().forEach(p -> {
@@ -132,19 +133,18 @@ public class SpaceControl extends JavaPlugin {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
-                bans.stream().forEach(b -> System.out.println(b + ":" + e.getUniqueId()));
-                ipBans.stream().forEach(b -> System.out.println(b + ":" + e.getAddress().toString()));
                 if(bans.contains(e.getUniqueId().toString())) {
                     List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
                 }
                 if(ipBans.contains(e.getAddress().toString())) {
-                    System.out.println(e.getAddress().toString());
                     List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
                 }
             }
 
+            // So it turns out that this actually can't be done by listening for chat events
+            // I guess Bukkit does it that way because reasons or something
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
@@ -155,6 +155,7 @@ public class SpaceControl extends JavaPlugin {
                 }
             }
         }, this);
+
         // Set up commands
 
         // Utility commands
@@ -170,6 +171,9 @@ public class SpaceControl extends JavaPlugin {
         getCommand("unbanip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true));
         getCommand("uncmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE, true));
         getCommand("unmute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE, true));
+        // Warning commands
+        getCommand("warn").setExecutor(new CommandWarn(this));
+        getCommand("warns").setExecutor(new CommandWarns(this));
     }
 
     public void onDisable() {

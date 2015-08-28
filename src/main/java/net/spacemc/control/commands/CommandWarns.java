@@ -12,10 +12,10 @@ import java.util.List;
 
 /**
  * @author audrey
- * @since 8/23/15.
+ * @since 8/27/15.
  */
-public class CommandHistory extends CCommand {
-    public CommandHistory(SpaceControl control) {
+public class CommandWarns extends CCommand {
+    public CommandWarns(SpaceControl control) {
         super(control);
     }
 
@@ -31,7 +31,7 @@ public class CommandHistory extends CCommand {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7's stats:");
                     commandSender.sendMessage("§7------------------------------------");
                     for(Punishment p : punishments) {
-                        if(p.getType().equals(Punishments.WARN)) {
+                        if(!p.getType().equals(Punishments.WARN)) {
                             continue;
                         }
                         String m = "";

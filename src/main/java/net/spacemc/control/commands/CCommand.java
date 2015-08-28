@@ -30,6 +30,5 @@ public abstract class CCommand implements CommandExecutor {
         String m = String.format("§7%s §c%s§7 %s for %s: %s", issuer,
                 Punishments.english(punishment), player, TimeUtil.english(length), reason);
         SpaceUtils.broadcastMessage(m);
-        Bukkit.getConsoleSender().sendMessage(m);
     }
 }
