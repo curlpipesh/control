@@ -28,7 +28,7 @@ public abstract class CCommand implements CommandExecutor {
 
     protected final void announcePunishment(String issuer, String player, String punishment, String reason, String length) {
         String m = String.format("§7%s §c%s§7 %s for %s: %s", issuer,
-                Punishments.punishmentToEnglish(punishment), player, TimeUtil.english(length), reason);
+                Punishments.english(punishment), player, TimeUtil.english(length), reason);
         SpaceUtils.broadcastMessage(m);
         Bukkit.getConsoleSender().sendMessage(m);
     }

@@ -61,28 +61,28 @@ public class TimeUtil {
         }
         if(t.endsWith("m")) {
             try {
-                return Integer.parseInt(t.replaceAll("m", "")) + " minutes";
+                return Integer.parseInt(t.replaceAll("m", "")) + " minute(s)";
             } catch(Exception e) {
                 e.printStackTrace();
                 return "forever";
             }
         } else if(t.endsWith("h")) {
             try {
-                return Integer.parseInt(t.replaceAll("h", "")) + " hours";
+                return Integer.parseInt(t.replaceAll("h", "")) + " hour(s)";
             } catch(Exception e) {
                 e.printStackTrace();
                 return "forever";
             }
         } else if(t.endsWith("d")) {
             try {
-                return Integer.parseInt(t.replaceAll("d", "")) + " days";
+                return Integer.parseInt(t.replaceAll("d", "")) + " day(s)";
             } catch(Exception e) {
                 e.printStackTrace();
                 return "forever";
             }
         } else if(t.endsWith("w")) {
             try {
-                return Integer.parseInt(t.replaceAll("w", "")) + " weeks";
+                return Integer.parseInt(t.replaceAll("w", "")) + " week(s)";
             } catch(Exception e) {
                 e.printStackTrace();
                 return "forever";

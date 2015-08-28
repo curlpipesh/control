@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -143,7 +144,7 @@ public class SQLiteDB extends Database {
     }
 
     @Override
-    public boolean insertPunishment(@NonNull Punishment p) {
+    public Optional<Punishment> insertPunishment(@NonNull Punishment p) {
         lastPunishmentId = p.getId() - 1;
         try {
             PreparedStatement s = getConnection().prepareStatement(String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
@@ -155,15 +156,16 @@ public class SQLiteDB extends Database {
             s.setInt(6, p.getLength());
             s.setString(7, p.getStart());
             s.setString(8, p.getEnd());
-            return execute(s);
+            execute(s);
+            return Optional.of(p);
         } catch(SQLException e) {
             e.printStackTrace();
-            return false;
+            return Optional.<Punishment>empty();
         }
     }
 
     @Override
-    public boolean insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes) {
+    public Optional<Punishment> insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes) {
         Date now = new Date();
         Date end = (Date) now.clone();
         Calendar calendar = Calendar.getInstance();
@@ -181,17 +183,12 @@ public class SQLiteDB extends Database {
             s.setInt(6, lengthInMinutes);
             s.setString(7, getControl().getFormat().format(now));
             s.setString(8, getControl().getFormat().format(end));
-            System.out.println(lastPunishmentId);
-            System.out.println(type);
-            System.out.println(issuer);
-            System.out.println(target);
-            System.out.println(lengthInMinutes);
-            System.out.println(getControl().getFormat().format(now));
-            System.out.println(getControl().getFormat().format(end));
-            return execute(s);
+            execute(s);
+            return Optional.of(new Punishment(getControl(), lastPunishmentId, type, issuer, target, reason, lengthInMinutes,
+                    getControl().getFormat().format(now), getControl().getFormat().format(end)));
         } catch(SQLException e) {
             e.printStackTrace();
-            return false;
+            return Optional.<Punishment>empty();
         }
     }
 
@@ -250,35 +247,26 @@ public class SQLiteDB extends Database {
     }
 
     @Override
-    public List<Punishment> getPunishmentsByType(@NonNull String... types) {
+    public List<Punishment> getAllPunishments() {
         List<Punishment> punishments = new CopyOnWriteArrayList<>();
-        for(@NonNull String t : types) {
-            try {
-                PreparedStatement s = getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE type = ?", getDatabaseName()));
-                s.setString(1, t);
-                s.execute();
-                ResultSet resultSet = s.getResultSet();
-                while(resultSet.next()) {
-                    int id = resultSet.getInt("id");
-                    String type = resultSet.getString("type");
-                    String issuer = resultSet.getString("issuer");
-                    String target = resultSet.getString("target");
-                    String reason = resultSet.getString("reason");
-                    int lengthInMinutes = resultSet.getInt("length");
-                    String start = resultSet.getString("start");
-                    String end = resultSet.getString("end");
-                    try {
-                        if(getControl().getFormat().parse(end).before(new Date())) {
-                            punishments.add(new Punishment(getControl(), id, type, issuer, target, reason, lengthInMinutes, start, end));
-                        }
-                    } catch(ParseException e) {
-                        e.printStackTrace();
-                    }
-                }
-                s.close();
-            } catch(SQLException e) {
-                e.printStackTrace();
+        try {
+            PreparedStatement s = getConnection().prepareStatement(String.format("SELECT * FROM %s", getDatabaseName()));
+            s.execute();
+            ResultSet resultSet = s.getResultSet();
+            while(resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String type = resultSet.getString("type");
+                String issuer = resultSet.getString("issuer");
+                String target = resultSet.getString("target");
+                String reason = resultSet.getString("reason");
+                int lengthInMinutes = resultSet.getInt("length");
+                String start = resultSet.getString("start");
+                String end = resultSet.getString("end");
+                punishments.add(new Punishment(getControl(), id, type, issuer, target, reason, lengthInMinutes, start, end));
             }
+            s.close();
+        } catch(SQLException e) {
+            e.printStackTrace();
         }
         return punishments;
     }

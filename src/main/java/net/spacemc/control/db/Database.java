@@ -10,9 +10,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 /**
  * @author audrey
@@ -75,9 +74,9 @@ public abstract class Database {
 
     public abstract List<Punishment> getPunishmentsBy(@NonNull String issuer);
 
-    public abstract boolean insertPunishment(@NonNull Punishment p);
+    public abstract Optional<Punishment> insertPunishment(@NonNull Punishment p);
 
-    public abstract boolean insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes);
+    public abstract Optional<Punishment> insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes);
 
     public abstract List<Punishment> getExpiredPunishments();
 
@@ -85,5 +84,5 @@ public abstract class Database {
 
     public abstract boolean removePunishments(@NonNull Punishment... ps);
 
-    public abstract List<Punishment> getPunishmentsByType(String... types);
+    public abstract List<Punishment> getAllPunishments();
 }

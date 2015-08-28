@@ -1,0 +1,4 @@
+ban-message: "§4BANNED§r: <reason>\n\n§rThis ban will last for: §c <time>§r\n\n§rExpiring at: §c<end>§r"
+no-undo: "Nothing to do here!"
+unpunish-success: "§a<name>§7 successfully un<punishment>!"
+invalid-target: "§c<name>§7 is an invalid target!"

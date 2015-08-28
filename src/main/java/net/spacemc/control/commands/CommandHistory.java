@@ -39,7 +39,8 @@ public class CommandHistory extends CCommand {
                         }
                         m += String.format("#%s: %s", p.getId(), p.getType());
                         commandSender.sendMessage(m);
-                        commandSender.sendMessage(String.format("§7 * By §a%s§7 for §c%s§7.", getEssentials().getUser(p.getIssuer()), p.getReason()));
+                        String issuer = getEssentials().getUser(p.getIssuer()) == null ? p.getIssuer() : getEssentials().getUser(p.getIssuer()).getName();
+                        commandSender.sendMessage(String.format("§7 * By §a%s§7 for §c%s§7.", issuer, p.getReason()));
                     }
                 } else {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7 has a clean record!");

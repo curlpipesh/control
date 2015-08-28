@@ -8,7 +8,7 @@ package net.spacemc.control.punishment;
 public interface Punishments {
     String BAN = "Ban", MUTE = "Mute", COMMAND_MUTE = "Command mute", IP_BAN = "IP ban", WARN = "Warning";
 
-    static String punishmentToEnglish(String punishment) {
+    static String english(String punishment) {
         switch(punishment) {
             case BAN:
                 return "banned";

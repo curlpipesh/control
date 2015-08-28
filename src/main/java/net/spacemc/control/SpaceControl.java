@@ -12,6 +12,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
@@ -51,14 +52,17 @@ public class SpaceControl extends JavaPlugin {
                 getLogger().info("Data folder made!");
             }
         }
+        getLogger().info("Saving default config...");
+        saveDefaultConfig();
         // Connect to dbs
         if(activePunishments.connect() && inactivePunishments.connect()) {
             getLogger().info("Connected to the databases!");
             if(activePunishments.initialize() && inactivePunishments.initialize()) {
                 getLogger().info("Initialised databases!");
                 // Load active mutes/cmutes/bans
-                List<Punishment> all = activePunishments.getPunishmentsByType(Punishments.BAN, Punishments.MUTE, Punishments.COMMAND_MUTE);
+                List<Punishment> all = activePunishments.getAllPunishments();
                 all.stream().forEach(p -> {
+                    System.out.println(p);
                     switch(p.getType()) {
                         case Punishments.BAN:
                             bans.add(p.getTarget());
@@ -123,23 +127,31 @@ public class SpaceControl extends JavaPlugin {
                         e.setCancelled(true);
                     }
                 }
-                if(cmutes.contains(uuid) || cmutes.contains(ip)) {
-                    if(e.getMessage().startsWith("/")) {
-                        e.setCancelled(true);
-                    }
-                }
             }
 
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
+                bans.stream().forEach(b -> System.out.println(b + ":" + e.getUniqueId()));
+                ipBans.stream().forEach(b -> System.out.println(b + ":" + e.getAddress().toString()));
                 if(bans.contains(e.getUniqueId().toString())) {
                     List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned: §r" + p.get(0).getReason() + " \nExpires: " + p.get(0).getEnd());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
                 }
                 if(ipBans.contains(e.getAddress().toString())) {
+                    System.out.println(e.getAddress().toString());
                     List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned: §r" + p.get(0).getReason() + " \nExpires: " + p.get(0).getEnd());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
+                }
+            }
+
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
+                String uuid = e.getPlayer().getUniqueId().toString();
+                String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(cmutes.contains(uuid) || cmutes.contains(ip)) {
+                    e.setCancelled(true);
                 }
             }
         }, this);
