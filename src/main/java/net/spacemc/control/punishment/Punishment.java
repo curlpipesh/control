@@ -43,7 +43,7 @@ public class Punishment {
 
     public boolean over() {
         try {
-            return control.getFormat().parse(end).before(new Date());
+            return !end.equalsIgnoreCase("forever") && control.getFormat().parse(end).before(new Date());
         } catch(ParseException e) {
             e.printStackTrace();
             return false;

@@ -58,6 +58,9 @@ public class SpaceControl extends JavaPlugin {
         if(activePunishments.connect() && inactivePunishments.connect()) {
             getLogger().info("Connected to the databases!");
             if(activePunishments.initialize() && inactivePunishments.initialize()) {
+                if(inactivePunishments.getLastPunishmentId() > activePunishments.getLastPunishmentId()) {
+                    activePunishments.setLastPunishmentId(inactivePunishments.getLastPunishmentId());
+                }
                 getLogger().info("Initialised databases!");
                 // Load active mutes/cmutes/bans
                 List<Punishment> all = activePunishments.getAllPunishments();
@@ -74,6 +77,8 @@ public class SpaceControl extends JavaPlugin {
                             break;
                         case Punishments.IP_BAN:
                             ipBans.add(p.getTarget());
+                            break;
+                        case Punishments.WARN:
                             break;
                         default:
                             getLogger().warning("I don't know what \"" + p.getType() + "\" warning type is?");

@@ -85,4 +85,8 @@ public abstract class Database {
     public abstract boolean removePunishments(@NonNull Punishment... ps);
 
     public abstract List<Punishment> getAllPunishments();
+
+    public abstract int getLastPunishmentId();
+
+    public abstract void setLastPunishmentId(int i);
 }

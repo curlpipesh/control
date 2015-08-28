@@ -101,6 +101,7 @@ public class GenericPunishmentCommand extends CCommand {
                     } else {
                         Punishment p = activePunishments.get(activePunishments.size() - 1);
                         getControl().getActivePunishments().removePunishment(p);
+                        getControl().getInactivePunishments().insertPunishment(p);
                         handlePunishment(type, finalTarget);
                         SpaceUtils.sendMessage(commandSender,
                                 formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser.getName(), p.getType()));
@@ -143,6 +144,7 @@ public class GenericPunishmentCommand extends CCommand {
                     } else {
                         Punishment p = activePunishments.get(activePunishments.size() - 1);
                         getControl().getActivePunishments().removePunishment(p);
+                        getControl().getInactivePunishments().insertPunishment(p);
                         handlePunishment(type, target);
                         SpaceUtils.sendMessage(commandSender, formatUnpunish(hideIP(p.getTarget()), p.getType()));
                     }

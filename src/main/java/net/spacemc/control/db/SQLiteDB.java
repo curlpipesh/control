@@ -2,6 +2,7 @@ package net.spacemc.control.db;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import net.spacemc.control.SpaceControl;
 import net.spacemc.control.punishment.Punishment;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class SQLiteDB extends Database {
     @Getter
+    @Setter
     private int lastPunishmentId = 0;
 
     public SQLiteDB(@NonNull SpaceControl control, @NonNull String dbName) {
@@ -210,6 +212,9 @@ public class SQLiteDB extends Database {
                 int lengthInMinutes = resultSet.getInt("length");
                 String start = resultSet.getString("start");
                 String end = resultSet.getString("end");
+                if(end.equalsIgnoreCase("forever")) {
+                    continue;
+                }
                 try {
                     if(getControl().getFormat().parse(end).before(new Date())) {
                         punishments.add(new Punishment(getControl(), id, type, issuer, target, reason, lengthInMinutes, start, end));

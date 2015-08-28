@@ -1,16 +1,22 @@
 package net.spacemc.control.commands;
 
 import com.earth2me.essentials.User;
+import com.google.common.collect.Lists;
 import net.spacemc.control.SpaceControl;
 import net.spacemc.control.punishment.Punishment;
 import net.spacemc.control.punishment.Punishments;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
+ * TODO Fuck it I'll clean this up later
+ *
  * @author audrey
  * @since 8/27/15.
  */
@@ -27,24 +33,24 @@ public class CommandWarns extends CCommand {
             if((essUser = getEssentials().getOfflineUser(playerName)) != null) {
                 List<Punishment> punishments = new ArrayList<>();
                 punishments.addAll(getControl().getActivePunishments().getPunishments(essUser.getConfigUUID().toString()));
+                punishments = Lists.reverse(punishments.stream().filter(p -> p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList()));
                 if(punishments.size() > 0) {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7's stats:");
-                    commandSender.sendMessage("§7------------------------------------");
+                    commandSender.sendMessage("§a" + essUser.getName() + "§7's warnings:");
+                    commandSender.sendMessage("§7§m------------------------------------§7");
                     for(Punishment p : punishments) {
-                        if(!p.getType().equals(Punishments.WARN)) {
-                            continue;
-                        }
-                        String m = "";
-                        if(p.over()) {
-                            m += "§7";
-                        } else {
-                            m += "§a";
-                        }
-                        m += String.format("#%s: %s", p.getId(), p.getType());
+                        String issuer =
+                                getEssentials().getUser(p.getIssuer()) == null ?
+                                        Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?
+                                                Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :
+                                                p.getIssuer() :
+                                        getEssentials().getUser(p.getIssuer()).getName();
+                        String m = String.format("§7#§a%s§7 - §a%s§7: %s", p.getId(), issuer, p.getType());
+
                         commandSender.sendMessage(m);
-                        String issuer = getEssentials().getUser(p.getIssuer()) == null ? p.getIssuer() : getEssentials().getUser(p.getIssuer()).getName();
-                        commandSender.sendMessage(String.format("§7 * By §a%s§7 for §c%s§7.", issuer, p.getReason()));
+                        //commandSender.sendMessage(String.format("§7 * By §a%s§7 for §c%s§7.", issuer, p.getReason()));
                     }
+                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has §c" + punishments.size()
+                            + "§7 total warnings");
                 } else {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7 has a clean record!");
                 }

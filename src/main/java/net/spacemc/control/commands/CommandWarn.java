@@ -4,10 +4,13 @@ import com.earth2me.essentials.User;
 import net.spacemc.control.SpaceControl;
 import net.spacemc.control.punishment.Punishments;
 import net.spacemc.control.util.TimeUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import pw.slacks.space.util.SpaceUtils;
+
+import java.util.UUID;
 
 /**
  * @author audrey
@@ -41,7 +44,7 @@ public class CommandWarn extends CCommand {
                 getControl().getActivePunishments().insertPunishment(Punishments.WARN,
                         issuer,
                         essUser.getConfigUUID().toString(), reason, Integer.MAX_VALUE);
-                String m = String.format("§7%s §cwarned§7 %s: %s", issuer, target, reason);
+                String m = String.format("§7%s §cwarned§7 %s: %s", Bukkit.getPlayer(UUID.fromString(issuer)).getName(), target, reason);
                 SpaceUtils.broadcastMessage(m);
             } else {
                 commandSender.sendMessage(invalidTargetString.replaceAll("<name>", args[0]));
