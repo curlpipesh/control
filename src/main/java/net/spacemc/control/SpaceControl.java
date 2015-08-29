@@ -2,8 +2,8 @@ package net.spacemc.control;
 
 import lombok.Getter;
 import net.spacemc.control.commands.*;
-import net.spacemc.control.db.Database;
-import net.spacemc.control.db.SQLiteDB;
+import net.spacemc.control.db.IPunishmentDB;
+import net.spacemc.control.db.PunishmentDB;
 import net.spacemc.control.punishment.Punishment;
 import net.spacemc.control.punishment.Punishments;
 import org.bukkit.Bukkit;
@@ -14,6 +14,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import pw.slacks.space.util.SpaceUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -25,10 +26,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class SpaceControl extends JavaPlugin {
     @Getter
-    private final Database activePunishments = new SQLiteDB(this, "active_punishments");
+    private final IPunishmentDB activePunishments = new PunishmentDB(this, "active_punishments");
 
     @Getter
-    private final Database inactivePunishments = new SQLiteDB(this, "inactive_punishments");
+    private final IPunishmentDB inactivePunishments = new PunishmentDB(this, "inactive_punishments");
 
     @Getter
     private List<String> mutes = new CopyOnWriteArrayList<>();
@@ -54,114 +55,9 @@ public class SpaceControl extends JavaPlugin {
         }
         getLogger().info("Saving default config...");
         saveDefaultConfig();
-        // Connect to dbs
-        if(activePunishments.connect() && inactivePunishments.connect()) {
-            getLogger().info("Connected to the databases!");
-            if(activePunishments.initialize() && inactivePunishments.initialize()) {
-                if(inactivePunishments.getLastPunishmentId() > activePunishments.getLastPunishmentId()) {
-                    activePunishments.setLastPunishmentId(inactivePunishments.getLastPunishmentId());
-                }
-                getLogger().info("Initialised databases!");
-                // Load active mutes/cmutes/bans
-                List<Punishment> all = activePunishments.getAllPunishments();
-                all.stream().forEach(p -> {
-                    switch(p.getType()) {
-                        case Punishments.BAN:
-                            bans.add(p.getTarget());
-                            break;
-                        case Punishments.COMMAND_MUTE:
-                            cmutes.add(p.getTarget());
-                            break;
-                        case Punishments.MUTE:
-                            mutes.add(p.getTarget());
-                            break;
-                        case Punishments.IP_BAN:
-                            ipBans.add(p.getTarget());
-                            break;
-                        case Punishments.WARN:
-                            break;
-                        default:
-                            getLogger().warning("I don't know what \"" + p.getType() + "\" warning type is?");
-                            break;
-                    }
-                });
-            } else {
-                getLogger().warning("Unable to initialise databases!");
-            }
-        } else {
-            Bukkit.getPluginManager().disablePlugin(this);
-            throw new IllegalStateException("Unable to connect to the databases!");
-        }
-        // Schedule the task to remove expired punishments and transfer them to the inactive db
-        // Also automate adding active punishments to the active lists
-        // Checks every second because fuck TPS I guess? It's not like there's gonna be millions of rows selected...
-        // I hope (. _ . )
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            List<Punishment> expired = activePunishments.getExpiredPunishments();
-            expired.stream().forEach(p -> {
-                getLogger().info("Removing inactive punishment: " + p.toString());
-                activePunishments.removePunishment(p);
-                switch(p.getType()) {
-                    case Punishments.BAN:
-                        bans.remove(p.getTarget());
-                        break;
-                    case Punishments.COMMAND_MUTE:
-                        cmutes.remove(p.getTarget());
-                        break;
-                    case Punishments.MUTE:
-                        mutes.remove(p.getTarget());
-                        break;
-                    case Punishments.IP_BAN:
-                        ipBans.remove(p.getTarget());
-                        break;
-                    default:
-                        break;
-                }
-                inactivePunishments.insertPunishment(p);
-            });
-        }, 0L, 20L);
-
-        // Register event listener to handle mutes/bans
-        Bukkit.getPluginManager().registerEvents(new Listener() {
-            @SuppressWarnings("unused")
-            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onPlayerChatEvent(AsyncPlayerChatEvent e) {
-                String uuid = e.getPlayer().getUniqueId().toString();
-                String ip = e.getPlayer().getAddress().getAddress().toString();
-                if(mutes.contains(uuid) || mutes.contains(ip)) {
-                    if(!e.getMessage().startsWith("/")) {
-                        e.setCancelled(true);
-                    }
-                }
-            }
-
-            @SuppressWarnings("unused")
-            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
-                if(bans.contains(e.getUniqueId().toString())) {
-                    List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
-                }
-                if(ipBans.contains(e.getAddress().toString())) {
-                    List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
-                }
-            }
-
-            // So it turns out that this actually can't be done by listening for chat events
-            // I guess Bukkit does it that way because reasons or something
-            @SuppressWarnings("unused")
-            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
-                String uuid = e.getPlayer().getUniqueId().toString();
-                String ip = e.getPlayer().getAddress().getAddress().toString();
-                if(cmutes.contains(uuid) || cmutes.contains(ip)) {
-                    e.setCancelled(true);
-                }
-            }
-        }, this);
-
-        // Set up commands
+        prepDBs();
+        scheduleCleanupTask();
+        registerEventBlockers();
 
         // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
@@ -187,5 +83,115 @@ public class SpaceControl extends JavaPlugin {
         } else {
             throw new IllegalStateException("Unable to disconnect from the databases!");
         }
+    }
+
+    private void prepDBs() {
+        if(activePunishments.connect() && inactivePunishments.connect()) {
+            getLogger().info("Connected to the databases!");
+            if(activePunishments.initialize() && inactivePunishments.initialize()) {
+                if(inactivePunishments.getLastPunishmentId() > activePunishments.getLastPunishmentId()) {
+                    activePunishments.setLastPunishmentId(inactivePunishments.getLastPunishmentId());
+                }
+                getLogger().info("Initialised databases!");
+                loadPunishments();
+            } else {
+                getLogger().warning("Unable to initialise databases!");
+            }
+        } else {
+            Bukkit.getPluginManager().disablePlugin(this);
+            throw new IllegalStateException("Unable to connect to the databases!");
+        }
+    }
+
+    private void loadPunishments() {
+        activePunishments.getAllPunishments().forEach(p -> {
+            switch(p.getType()) {
+                case Punishments.BAN:
+                    bans.add(p.getTarget());
+                    break;
+                case Punishments.COMMAND_MUTE:
+                    cmutes.add(p.getTarget());
+                    break;
+                case Punishments.MUTE:
+                    mutes.add(p.getTarget());
+                    break;
+                case Punishments.IP_BAN:
+                    ipBans.add(p.getTarget());
+                    break;
+                case Punishments.WARN:
+                    break;
+                default:
+                    getLogger().warning("I don't know what \"" + p.getType() + "\" warning type is?");
+                    break;
+            }
+        });
+    }
+
+    private void scheduleCleanupTask() {
+        // Checks every second because fuck TPS I guess? It's not like there's gonna be millions of rows selected...
+        // I hope (. _ . )
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> activePunishments.getExpiredPunishments().forEach(p -> {
+            getLogger().info("Removing inactive punishment: " + p.toString());
+            activePunishments.removePunishment(p);
+            switch(p.getType()) {
+                case Punishments.BAN:
+                    bans.remove(p.getTarget());
+                    break;
+                case Punishments.COMMAND_MUTE:
+                    cmutes.remove(p.getTarget());
+                    break;
+                case Punishments.MUTE:
+                    mutes.remove(p.getTarget());
+                    break;
+                case Punishments.IP_BAN:
+                    ipBans.remove(p.getTarget());
+                    break;
+                default:
+                    break;
+            }
+            inactivePunishments.insertPunishment(p);
+        }), 0L, 20L);
+    }
+
+    private void registerEventBlockers() {
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onPlayerChatEvent(AsyncPlayerChatEvent e) {
+                String uuid = e.getPlayer().getUniqueId().toString();
+                String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(mutes.contains(uuid) || mutes.contains(ip)) {
+                    SpaceUtils.sendMessage(e.getPlayer(), "You're still muted! You can't talk!");
+                    e.setCancelled(true);
+                }
+            }
+        }, this);
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
+                if(bans.contains(e.getUniqueId().toString())) {
+                    List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
+                }
+                if(ipBans.contains(e.getAddress().toString())) {
+                    List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
+                }
+            }
+        }, this);
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            // So it turns out that this actually can't be done by listening for chat events
+            // I guess Bukkit does it that way because reasons or something
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
+                String uuid = e.getPlayer().getUniqueId().toString();
+                String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(cmutes.contains(uuid) || cmutes.contains(ip)) {
+                    e.setCancelled(true);
+                }
+            }
+        }, this);
     }
 }

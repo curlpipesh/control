@@ -51,7 +51,7 @@ public class CommandHistory extends CCommand {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7 has §c" + (active.size() + inactive.size())
                             + "§7 total punishments");
                 } else {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has a clean record!");
+                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has a clean history!");
                 }
                 return true;
             } else {

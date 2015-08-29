@@ -12,12 +12,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author audrey
  * @since 8/23/15.
  */
-public abstract class Database {
+public abstract class Database implements IDatabase {
     @Getter
     @Setter
     private String databaseName;
@@ -37,20 +38,18 @@ public abstract class Database {
     @Setter
     private boolean connected = false;
 
+    @Getter
+    private final List<Runnable> initializationTasks;
+
     public Database(@NonNull SpaceControl control, @NonNull String databaseName) {
         this.databaseName = databaseName;
         this.control = control;
         databaseFile = new File(control.getDataFolder() + File.separator + databaseName + ".db");
+        initializationTasks = new CopyOnWriteArrayList<>();
     }
 
-    protected final boolean doesDBDriverClassExist() {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            return true;
-        } catch(ClassNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public boolean addInitTask(Runnable task) {
+        return initializationTasks.add(task);
     }
 
     protected final boolean execute(PreparedStatement s) {
@@ -63,30 +62,4 @@ public abstract class Database {
             return false;
         }
     }
-
-    public abstract boolean connect();
-
-    public abstract boolean disconnect();
-
-    public abstract boolean initialize();
-
-    public abstract List<Punishment> getPunishments(@NonNull String target);
-
-    public abstract List<Punishment> getPunishmentsBy(@NonNull String issuer);
-
-    public abstract Optional<Punishment> insertPunishment(@NonNull Punishment p);
-
-    public abstract Optional<Punishment> insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes);
-
-    public abstract List<Punishment> getExpiredPunishments();
-
-    public abstract boolean removePunishment(@NonNull Punishment p);
-
-    public abstract boolean removePunishments(@NonNull Punishment... ps);
-
-    public abstract List<Punishment> getAllPunishments();
-
-    public abstract int getLastPunishmentId();
-
-    public abstract void setLastPunishmentId(int i);
 }

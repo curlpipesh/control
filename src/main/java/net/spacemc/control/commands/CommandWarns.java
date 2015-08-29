@@ -52,7 +52,7 @@ public class CommandWarns extends CCommand {
                     commandSender.sendMessage("§a" + essUser.getName() + "§7 has §c" + punishments.size()
                             + "§7 total warnings");
                 } else {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has a clean record!");
+                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has no warnings!");
                 }
                 return true;
             } else {
