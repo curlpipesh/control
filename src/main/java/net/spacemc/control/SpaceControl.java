@@ -7,6 +7,8 @@ import net.spacemc.control.db.PunishmentDB;
 import net.spacemc.control.punishment.Punishment;
 import net.spacemc.control.punishment.Punishments;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,7 +16,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import pw.slacks.space.util.SpaceUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -46,6 +47,12 @@ public class SpaceControl extends JavaPlugin {
     @Getter
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    @Getter
+    private String chatPrefix;
+
+    @Getter
+    private String chatHeader;
+
     public void onEnable() {
         if(!this.getDataFolder().exists()) {
             getLogger().info("Data folder doesn't exist, making...");
@@ -55,6 +62,8 @@ public class SpaceControl extends JavaPlugin {
         }
         getLogger().info("Saving default config...");
         saveDefaultConfig();
+        chatPrefix = getConfig().getString("chat-prefix");
+        chatHeader = getConfig().getString("chat-header");
         prepDBs();
         scheduleCleanupTask();
         registerEventBlockers();
@@ -85,6 +94,31 @@ public class SpaceControl extends JavaPlugin {
         } else {
             throw new IllegalStateException("Unable to disconnect from the databases!");
         }
+    }
+
+    public void sendMessage(CommandSender commandSender, String message) {
+        commandSender.sendMessage(String.format("%s %s", chatPrefix, message));
+    }
+
+    public void sendImportantMessage(CommandSender commandSender, String message) {
+        commandSender.sendMessage(String.format("%s%s%s", chatHeader, chatPrefix, chatHeader));
+        commandSender.sendMessage(message);
+        // ???
+        // commandSender.sendMessage(String.format("%s%s", chatHeader, chatHeader));
+    }
+
+    public void broadcastMessage(String message) {
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            sendMessage(player, message);
+        }
+        sendMessage(Bukkit.getConsoleSender(), String.format("%s %s", chatPrefix, message));
+    }
+
+    public void broadcastImportantMessage(String message) {
+        for(Player player : Bukkit.getOnlinePlayers()) {
+            sendImportantMessage(player, message);
+        }
+        sendImportantMessage(Bukkit.getConsoleSender(), message);
     }
 
     private void prepDBs() {
@@ -163,7 +197,7 @@ public class SpaceControl extends JavaPlugin {
                 String uuid = e.getPlayer().getUniqueId().toString();
                 String ip = e.getPlayer().getAddress().getAddress().toString();
                 if(mutes.contains(uuid) || mutes.contains(ip)) {
-                    SpaceUtils.sendMessage(e.getPlayer(), "You're still muted! You can't talk!");
+                    sendMessage(e.getPlayer(), "You're still muted! You can't talk!");
                     e.setCancelled(true);
                 }
             }

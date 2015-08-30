@@ -9,9 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import pw.slacks.space.util.SpaceUtils;
 import sun.net.util.IPAddressUtil;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -104,19 +104,7 @@ public class GenericPunishmentCommand extends CCommand {
                 }
 
                 if(isUndo) {
-                    List<Punishment> activePunishments = getControl().getActivePunishments()
-                            .getPunishments(finalTarget);
-                    if(activePunishments.isEmpty()) {
-                        // Nothing to do here!
-                        SpaceUtils.sendMessage(commandSender, noUndoString);
-                    } else {
-                        Punishment p = activePunishments.get(activePunishments.size() - 1);
-                        getControl().getActivePunishments().removePunishment(p);
-                        getControl().getInactivePunishments().insertPunishment(p);
-                        handlePunishment(type, finalTarget);
-                        SpaceUtils.sendMessage(commandSender,
-                                formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser.getName(), p.getType()));
-                    }
+                    unpunish(finalTarget, commandSender, essUser);
                     return true;
                 } else {
                     Optional<Punishment> p = getControl().getActivePunishments()
@@ -145,24 +133,14 @@ public class GenericPunishmentCommand extends CCommand {
                 }
             } else if(IPAddressUtil.isIPv4LiteralAddress(target.replaceFirst("/", ""))) {
                 if(isUndo) {
-                    List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
-                    if(activePunishments.isEmpty()) {
-                        // Nothing to do here!
-                        SpaceUtils.sendMessage(commandSender, noUndoString);
-                    } else {
-                        Punishment p = activePunishments.get(activePunishments.size() - 1);
-                        getControl().getActivePunishments().removePunishment(p);
-                        getControl().getInactivePunishments().insertPunishment(p);
-                        handlePunishment(type, target);
-                        SpaceUtils.sendMessage(commandSender, formatUnpunish(hideIP(p.getTarget()), p.getType()));
-                    }
+                    unpunish(target, commandSender, null);
                     return true;
                 } else {
                     Optional<Punishment> p = getControl().getActivePunishments()
                             .insertPunishment(type,
                                     commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                     target, reason, time);
-                    if(punishIP) {
+                    if(type.equals(Punishments.BAN) || type.equals(Punishments.IP_BAN)) {
                         for(Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
                                             (t ? TimeUtil.english(args[1]) : "Forever"),
@@ -179,6 +157,20 @@ public class GenericPunishmentCommand extends CCommand {
             return true;
         } else {
             return false;
+        }
+    }
+
+    private void unpunish(String target, CommandSender commandSender, @Nullable User essUser) {
+        List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
+        if(activePunishments.isEmpty()) {
+            getControl().sendMessage(commandSender, noUndoString);
+        } else {
+            Punishment p = activePunishments.get(activePunishments.size() - 1);
+            getControl().getActivePunishments().removePunishment(p);
+            getControl().getInactivePunishments().insertPunishment(p);
+            handlePunishment(type, target);
+            getControl().sendMessage(commandSender,
+                    formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser != null ? essUser.getName() : target, p.getType()));
         }
     }
 

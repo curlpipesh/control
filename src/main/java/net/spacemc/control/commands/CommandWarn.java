@@ -3,12 +3,10 @@ package net.spacemc.control.commands;
 import com.earth2me.essentials.User;
 import net.spacemc.control.SpaceControl;
 import net.spacemc.control.punishment.Punishments;
-import net.spacemc.control.util.TimeUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import pw.slacks.space.util.SpaceUtils;
 
 import java.util.UUID;
 
@@ -30,6 +28,7 @@ public class CommandWarn extends CCommand {
             String target = args[0];
             User essUser;
             String issuer = commandSender instanceof Player ? ((Player)commandSender).getUniqueId().toString() : "Console";
+            String issuer2 = commandSender instanceof Player ? ((Player)commandSender).getName() : "Console";
 
             if((essUser = getEssentials().getUser(target)) != null) {
                 String reason = "§c" + Punishments.WARN + "§r";
@@ -44,8 +43,8 @@ public class CommandWarn extends CCommand {
                 getControl().getActivePunishments().insertPunishment(Punishments.WARN,
                         issuer,
                         essUser.getConfigUUID().toString(), reason, Integer.MAX_VALUE);
-                String m = String.format("§7%s §cwarned§7 %s: %s", Bukkit.getPlayer(UUID.fromString(issuer)).getName(), target, reason);
-                SpaceUtils.broadcastMessage(m);
+                String m = String.format("§7%s §cwarned§7 %s: %s", issuer2, target, reason);
+                getControl().broadcastMessage(m);
             } else {
                 commandSender.sendMessage(invalidTargetString.replaceAll("<name>", args[0]));
             }
