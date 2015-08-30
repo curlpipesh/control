@@ -1,4 +1,4 @@
-package net.spacemc.control.db;
+package me.curlpipesh.control.db;
 
 import java.util.List;
 

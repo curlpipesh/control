@@ -1,14 +1,14 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.User;
 import com.google.common.collect.Lists;
+import me.curlpipesh.control.punishment.Punishment;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
-import net.spacemc.control.punishment.Punishments;
+import me.curlpipesh.control.Control;
+import me.curlpipesh.control.punishment.Punishments;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @since 8/27/15.
  */
 public class CommandWarns extends CCommand {
-    public CommandWarns(SpaceControl control) {
+    public CommandWarns(Control control) {
         super(control);
     }
 
@@ -62,7 +62,7 @@ public class CommandWarns extends CCommand {
     }
 
     private void sendMessage(CommandSender commandSender, Punishment p) {
-        String issuer =
+        String issuer = p.getIssuer().equalsIgnoreCase("console") ? "CONSOLE" :
                 getEssentials().getUser(p.getIssuer()) == null ?
                         Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?
                                 Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :
@@ -72,7 +72,8 @@ public class CommandWarns extends CCommand {
         TextComponent line = new TextComponent(m);
         HoverEvent e = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder("On: ").color(ChatColor.DARK_PURPLE).append(p.getStart()).color(ChatColor.RESET)
-                        .append("\nFor: ").color(ChatColor.DARK_PURPLE).append(p.getReason()).color(ChatColor.RESET).create());
+                        .append("\n").color(ChatColor.RESET).append("For: ").color(ChatColor.DARK_PURPLE)
+                        .append(p.getReason()).color(ChatColor.RESET).create());
         line.setHoverEvent(e);
         if(commandSender instanceof Player) {
             ((Player)commandSender).spigot().sendMessage(line);

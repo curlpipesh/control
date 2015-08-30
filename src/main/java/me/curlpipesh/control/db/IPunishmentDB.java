@@ -1,7 +1,7 @@
-package net.spacemc.control.db;
+package me.curlpipesh.control.db;
 
 import lombok.NonNull;
-import net.spacemc.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishment;
 
 import java.util.List;
 import java.util.Optional;

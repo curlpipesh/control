@@ -1,6 +1,6 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
-import net.spacemc.control.SpaceControl;
+import me.curlpipesh.control.Control;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
  * @since 8/29/15.
  */
 public class CommandClearChat extends CCommand {
-    public CommandClearChat(SpaceControl control) {
+    public CommandClearChat(Control control) {
         super(control);
     }
 

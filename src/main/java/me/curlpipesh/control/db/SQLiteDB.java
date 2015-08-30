@@ -1,8 +1,8 @@
-package net.spacemc.control.db;
+package me.curlpipesh.control.db;
 
 import lombok.Getter;
 import lombok.NonNull;
-import net.spacemc.control.SpaceControl;
+import me.curlpipesh.control.Control;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,7 +16,7 @@ public class SQLiteDB extends Database {
     @Getter
     private final String initializationStatement;
 
-    public SQLiteDB(@NonNull SpaceControl control, @NonNull String dbName, @NonNull String initializationStatement) {
+    public SQLiteDB(@NonNull Control control, @NonNull String dbName, @NonNull String initializationStatement) {
         super(control, dbName);
         this.initializationStatement = initializationStatement;
     }

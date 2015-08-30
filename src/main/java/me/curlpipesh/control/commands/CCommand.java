@@ -1,10 +1,10 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.Essentials;
 import lombok.Getter;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishments;
-import net.spacemc.control.util.TimeUtil;
+import me.curlpipesh.control.Control;
+import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.util.TimeUtil;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,19 +14,19 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public abstract class CCommand implements CommandExecutor {
     @Getter
-    private final SpaceControl control;
+    private final Control control;
 
     @Getter
     private final Essentials essentials;
 
-    public CCommand(SpaceControl control) {
+    public CCommand(Control control) {
         this.control = control;
         essentials = JavaPlugin.getPlugin(Essentials.class);
     }
 
     protected final void announcePunishment(String issuer, String player, String punishment, String reason, String length) {
-        String m = String.format("§7%s §c%s§7 %s for %s: %s", issuer,
-                Punishments.english(punishment), player, TimeUtil.english(length), reason);
-        control.broadcastImportantMessage(m);
+        String m = String.format("§7%s §c%s§7 %s for %s:", issuer,
+                Punishments.english(punishment), player, TimeUtil.english(length));
+        control.broadcastImportantMessage(m, "§7" + reason);
     }
 }

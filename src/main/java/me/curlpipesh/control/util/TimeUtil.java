@@ -1,4 +1,4 @@
-package net.spacemc.control.util;
+package me.curlpipesh.control.util;
 
 import java.util.regex.Pattern;
 

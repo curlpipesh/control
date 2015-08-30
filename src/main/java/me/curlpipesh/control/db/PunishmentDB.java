@@ -1,10 +1,10 @@
-package net.spacemc.control.db;
+package me.curlpipesh.control.db;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
+import me.curlpipesh.control.Control;
+import me.curlpipesh.control.punishment.Punishment;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +25,7 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
     @Setter
     private int lastPunishmentId = 0;
 
-    public PunishmentDB(@NonNull SpaceControl control, @NonNull String dbName) {
+    public PunishmentDB(@NonNull Control control, @NonNull String dbName) {
         super(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
                 + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, target TEXT NOT NULL, "
                 + "reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, end TEXT NOT NULL)");

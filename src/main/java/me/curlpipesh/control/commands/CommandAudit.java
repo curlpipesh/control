@@ -1,8 +1,8 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.User;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.Control;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -14,7 +14,7 @@ import java.util.List;
  * @since 8/23/15.
  */
 public class CommandAudit extends CCommand {
-    public CommandAudit(SpaceControl control) {
+    public CommandAudit(Control control) {
         super(control);
     }
 

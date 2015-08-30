@@ -1,6 +1,8 @@
-package net.spacemc.control.punishment;
+package me.curlpipesh.control.punishment;
 
 /**
+ * TODO This should be an enum!
+ *
  * @author audrey
  * @since 8/23/15.
  */

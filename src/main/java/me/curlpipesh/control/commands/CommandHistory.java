@@ -1,13 +1,13 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.User;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
-import net.spacemc.control.punishment.Punishments;
+import me.curlpipesh.control.Control;
+import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishments;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * @since 8/23/15.
  */
 public class CommandHistory extends CCommand {
-    public CommandHistory(SpaceControl control) {
+    public CommandHistory(Control control) {
         super(control);
     }
 
@@ -72,7 +72,7 @@ public class CommandHistory extends CCommand {
             m += "§7";
         }
         m += String.format("%s§7 - %s: %s", p.getId(), p.getType(), p.getReason());
-        String issuer =
+        String issuer = p.getIssuer().equalsIgnoreCase("console") ? "CONSOLE" :
                 getEssentials().getUser(p.getIssuer()) == null ?
                         Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?
                                 Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :

@@ -1,11 +1,12 @@
-package net.spacemc.control;
+package me.curlpipesh.control;
 
 import lombok.Getter;
-import net.spacemc.control.commands.*;
-import net.spacemc.control.db.IPunishmentDB;
-import net.spacemc.control.db.PunishmentDB;
-import net.spacemc.control.punishment.Punishment;
-import net.spacemc.control.punishment.Punishments;
+import me.curlpipesh.control.adblock.Adblocker;
+import me.curlpipesh.control.commands.*;
+import me.curlpipesh.control.db.IPunishmentDB;
+import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.db.PunishmentDB;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,7 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author audrey
  * @since 8/23/15.
  */
-public class SpaceControl extends JavaPlugin {
+public class Control extends JavaPlugin {
     @Getter
     private final IPunishmentDB activePunishments = new PunishmentDB(this, "active_punishments");
 
@@ -96,25 +97,29 @@ public class SpaceControl extends JavaPlugin {
         }
     }
 
-    public void sendMessage(CommandSender commandSender, String message) {
-        commandSender.sendMessage(String.format("%s %s", chatPrefix, message));
+    public void sendMessage(CommandSender commandSender, String... message) {
+        for(String e : message) {
+            commandSender.sendMessage(String.format("%s %s", chatPrefix, e));
+        }
     }
 
-    public void sendImportantMessage(CommandSender commandSender, String message) {
+    public void sendImportantMessage(CommandSender commandSender, String... message) {
         commandSender.sendMessage(String.format("%s%s%s", chatHeader, chatPrefix, chatHeader));
-        commandSender.sendMessage(message);
+        for(String e : message) {
+            commandSender.sendMessage(e);
+        }
         // ???
         // commandSender.sendMessage(String.format("%s%s", chatHeader, chatHeader));
     }
 
-    public void broadcastMessage(String message) {
+    public void broadcastMessage(String... message) {
         for(Player player : Bukkit.getOnlinePlayers()) {
             sendMessage(player, message);
         }
-        sendMessage(Bukkit.getConsoleSender(), String.format("%s %s", chatPrefix, message));
+        sendMessage(Bukkit.getConsoleSender(), message);
     }
 
-    public void broadcastImportantMessage(String message) {
+    public void broadcastImportantMessage(String... message) {
         for(Player player : Bukkit.getOnlinePlayers()) {
             sendImportantMessage(player, message);
         }
@@ -190,6 +195,7 @@ public class SpaceControl extends JavaPlugin {
     }
 
     private void registerEventBlockers() {
+        Bukkit.getPluginManager().registerEvents(new Adblocker(this), this);
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

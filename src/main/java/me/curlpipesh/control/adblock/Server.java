@@ -1,4 +1,7 @@
-package net.spacemc.control.adblock;
+package me.curlpipesh.control.adblock;
+
+import lombok.Getter;
+import me.curlpipesh.control.Control;
 
 import java.net.InetSocketAddress;
 
@@ -7,13 +10,16 @@ import java.net.InetSocketAddress;
  * @since 8/30/15.
  */
 public class Server {
+    @Getter
     private String ip;
     private int port;
     private String data;
+    private Control control;
 
-    public Server(final String ip, final int port) {
+    public Server(Control control, final String ip, final String port) {
+        this.control = control;
         this.ip = ip;
-        this.port = port;
+        this.port = Integer.parseInt(port);
     }
 
     public boolean isOnline() {
@@ -26,7 +32,7 @@ public class Server {
             if(response == null) {
                 return false;
             }
-            if(response.getDescription().contains("Curspex")) {
+            if(response.getDescription().contains(control.getConfig().getString("home"))) {
                 this.data = "HOME";
                 return false;
             }

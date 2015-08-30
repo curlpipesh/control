@@ -1,10 +1,10 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.User;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
-import net.spacemc.control.punishment.Punishments;
-import net.spacemc.control.util.TimeUtil;
+import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.util.TimeUtil;
+import me.curlpipesh.control.Control;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,7 +36,7 @@ public class GenericPunishmentCommand extends CCommand {
      * @param control Plugin instance
      * @param type    Punishment type
      */
-    public GenericPunishmentCommand(SpaceControl control, String type) {
+    public GenericPunishmentCommand(Control control, String type) {
         this(control, type, false);
     }
 
@@ -47,7 +47,7 @@ public class GenericPunishmentCommand extends CCommand {
      * @param type    Punishment type
      * @param isUndo  Whether or not the command undoes a punishment
      */
-    public GenericPunishmentCommand(SpaceControl control, String type, boolean isUndo) {
+    public GenericPunishmentCommand(Control control, String type, boolean isUndo) {
         super(control);
         this.type = type;
         this.isUndo = isUndo;

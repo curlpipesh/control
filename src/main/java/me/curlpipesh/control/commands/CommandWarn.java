@@ -1,14 +1,11 @@
-package net.spacemc.control.commands;
+package me.curlpipesh.control.commands;
 
 import com.earth2me.essentials.User;
-import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishments;
-import org.bukkit.Bukkit;
+import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.Control;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.UUID;
 
 /**
  * @author audrey
@@ -17,7 +14,7 @@ import java.util.UUID;
 public class CommandWarn extends CCommand {
     private final String invalidTargetString;
 
-    public CommandWarn(SpaceControl control) {
+    public CommandWarn(Control control) {
         super(control);
         invalidTargetString = control.getConfig().getString("invalid-target");
     }

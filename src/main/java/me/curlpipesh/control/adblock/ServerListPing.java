@@ -1,4 +1,4 @@
-package net.spacemc.control.adblock;
+package me.curlpipesh.control.adblock;
 
 import com.google.gson.Gson;
 
@@ -45,15 +45,15 @@ public class ServerListPing {
         do {
             k = in.readByte();
             i |= (k & 0x7F) << j++ * 7;
-            if(j > 5) {
+            if (j > 5) {
                 throw new RuntimeException("VarInt too big");
             }
-        } while((k & 0x80) == 0x80);
+        } while ((k & 0x80) == 0x80);
         return i;
     }
 
     public void writeVarInt(final DataOutputStream out, int paramInt) throws IOException {
-        while((paramInt & 0xFFFFFF80) != 0x0) {
+        while ((paramInt & 0xFFFFFF80) != 0x0) {
             out.writeByte((paramInt & 0x7F) | 0x80);
             paramInt >>>= 7;
         }
@@ -61,7 +61,8 @@ public class ServerListPing {
     }
 
     public StatusResponse fetchData() throws IOException {
-        try(Socket socket = new Socket()) {
+        final Socket socket = new Socket();
+        try {
             socket.setSoTimeout(this.timeout);
             socket.connect(this.host, this.timeout);
             final OutputStream outputStream = socket.getOutputStream();
@@ -83,17 +84,17 @@ public class ServerListPing {
             final DataInputStream dataInputStream = new DataInputStream(inputStream);
             final int size = this.readVarInt(dataInputStream);
             int id = this.readVarInt(dataInputStream);
-            if(id == -1) {
+            if (id == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if(id != 0) {
+            if (id != 0) {
                 throw new IOException("Invalid packetID");
             }
             final int length = this.readVarInt(dataInputStream);
-            if(length == -1) {
+            if (length == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if(length == 0) {
+            if (length == 0) {
                 throw new IOException("Invalid string length.");
             }
             final byte[] in = new byte[length];
@@ -105,15 +106,15 @@ public class ServerListPing {
             dataOutputStream.writeLong(now);
             this.readVarInt(dataInputStream);
             id = this.readVarInt(dataInputStream);
-            if(id == -1) {
+            if (id == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if(id != 1) {
+            if (id != 1) {
                 throw new IOException("Invalid packetID");
             }
             final long pingtime = dataInputStream.readLong();
-            final StatusResponse response = (StatusResponse) this.gson.fromJson(json, (Class) StatusResponse.class);
-            response.setTime((int) (now - pingtime));
+            final StatusResponse response = (StatusResponse)this.gson.fromJson(json, (Class)StatusResponse.class);
+            response.setTime((int)(now - pingtime));
             dataOutputStream.close();
             outputStream.close();
             inputStreamReader.close();
@@ -121,9 +122,13 @@ public class ServerListPing {
             socket.close();
             return response;
         }
+        finally {
+            socket.close();
+        }
     }
 
-    public class StatusResponse {
+    public class StatusResponse
+    {
         private String description;
         private Players players;
         private Version version;
@@ -155,7 +160,8 @@ public class ServerListPing {
         }
     }
 
-    public class Players {
+    public class Players
+    {
         private int max;
         private int online;
         private List<Player> sample;
@@ -173,7 +179,8 @@ public class ServerListPing {
         }
     }
 
-    public class Player {
+    public class Player
+    {
         private String name;
         private String id;
 
@@ -186,7 +193,8 @@ public class ServerListPing {
         }
     }
 
-    public class Version {
+    public class Version
+    {
         private String name;
         private String protocol;
 

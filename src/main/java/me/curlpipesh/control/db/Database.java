@@ -1,9 +1,9 @@
-package net.spacemc.control.db;
+package me.curlpipesh.control.db;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import net.spacemc.control.SpaceControl;
+import me.curlpipesh.control.Control;
 
 import java.io.File;
 import java.sql.Connection;
@@ -26,7 +26,7 @@ public abstract class Database implements IDatabase {
     private File databaseFile;
 
     @Getter
-    private final SpaceControl control;
+    private final Control control;
 
     @Getter
     @Setter
@@ -39,7 +39,7 @@ public abstract class Database implements IDatabase {
     @Getter
     private final List<Runnable> initializationTasks;
 
-    public Database(@NonNull SpaceControl control, @NonNull String databaseName) {
+    public Database(@NonNull Control control, @NonNull String databaseName) {
         this.databaseName = databaseName;
         this.control = control;
         databaseFile = new File(control.getDataFolder() + File.separator + databaseName + ".db");

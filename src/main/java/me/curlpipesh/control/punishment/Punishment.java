@@ -1,14 +1,12 @@
-package net.spacemc.control.punishment;
+package me.curlpipesh.control.punishment;
 
 import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
-import net.spacemc.control.SpaceControl;
+import me.curlpipesh.control.Control;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * @author audrey
@@ -17,7 +15,7 @@ import java.util.UUID;
 @Data
 @ToString
 public class Punishment {
-    private SpaceControl control;
+    private Control control;
     private int id;
     private String type;
     private String issuer;
@@ -27,7 +25,7 @@ public class Punishment {
     private String start;
     private String end;
 
-    public Punishment(@NonNull SpaceControl control, @NonNull int id, @NonNull String type, @NonNull String issuer,
+    public Punishment(@NonNull Control control, @NonNull int id, @NonNull String type, @NonNull String issuer,
                       @NonNull String target, @NonNull String reason, @NonNull int length, @NonNull String start,
                       @NonNull String end) {
         this.control = control;

@@ -1,10 +1,10 @@
-name: SpaceControl
-main: net.spacemc.control.SpaceControl
+name: Control
+main: me.curlpipesh.control.Control
 version: 0.1.0
-description: SpaceMC's plugin for banning and whatnot
-authors: [skirts, sage]
+description: skirts' plugin for banning and whatnot
+authors: [skirts]
 website: http://curlpipesh.me/
-depend: [SpaceUtils, Essentials]
+depend: [Essentials]
 
 commands:
   audit:
