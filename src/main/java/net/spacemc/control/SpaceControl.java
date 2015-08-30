@@ -61,6 +61,8 @@ public class SpaceControl extends JavaPlugin {
 
         // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
+        getCommand("clearchat").setExecutor(new CommandClearChat(this));
+        getCommand("cc").setExecutor(new CommandClearChat(this));
         getCommand("history").setExecutor(new CommandHistory(this));
         // Punishment commands
         getCommand("ban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN));
@@ -174,8 +176,8 @@ public class SpaceControl extends JavaPlugin {
                     List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
                 }
-                if(ipBans.contains(e.getAddress().toString())) {
-                    List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString());
+                if(ipBans.contains(e.getAddress().toString().replaceAll("/", ""))) {
+                    List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString().replaceAll("/", ""));
                     e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
                 }
             }

@@ -29,6 +29,7 @@ public class SQLiteDB extends Database {
         if(doesDriverExist()) {
             try {
                 setConnection(DriverManager.getConnection("jdbc:sqlite:" + getDatabaseFile().getPath()));
+                getConnection().setAutoCommit(true);
                 setConnected(true);
                 return true;
             } catch(SQLException e) {

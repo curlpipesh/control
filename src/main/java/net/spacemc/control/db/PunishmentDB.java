@@ -88,7 +88,9 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
     public Optional<Punishment> insertPunishment(@NonNull Punishment p) {
         lastPunishmentId = p.getId() - 1;
         try {
-            PreparedStatement s = getConnection().prepareStatement(String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
+            PreparedStatement s = getConnection()
+                    .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
             s.setString(2, p.getType());
             s.setString(3, p.getIssuer());
@@ -117,7 +119,9 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
         String endFormatted = lengthInMinutes == Integer.MAX_VALUE ? "Forever" : getControl().getFormat().format(end);
 
         try {
-            PreparedStatement s = getConnection().prepareStatement(String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
+            PreparedStatement s = getConnection()
+                    .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
             s.setString(2, type);
             s.setString(3, issuer);

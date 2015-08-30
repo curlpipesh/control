@@ -4,14 +4,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import net.spacemc.control.SpaceControl;
-import net.spacemc.control.punishment.Punishment;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**

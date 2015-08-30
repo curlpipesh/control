@@ -7,43 +7,51 @@ website: http://curlpipesh.me/
 depend: [SpaceUtils, Essentials]
 
 commands:
-  audit: #
+  audit:
     description: Shows all punishments issued by a player
     usage: /<command> <player>
     default: op
-  ban: #
+  ban:
     description: Bans a player
     usage: /<command> <player> [length] [reason]
     default: op
-  banip: #
+  banip:
     description: Bans an IP
     usage: /<command> <player|IP> [length] [reason]
     default: op
-  cmute: #
+  cc:
+    description: Alias of /clearchat
+    usage: /<command>
+    default: op
+  clearchat:
+    description: Clears the chat
+    usage: /<command>
+    default: op
+  cmute:
     description: Prevents a player from using commands
     usage: /<command> <player> [length] [reason]
     default: op
-  history: #
+  history:
     description: Shows all punishments for a player
     usage: /<command> <player>
     default: op
-  mute: #
+  mute:
     description: Prevents a player from sending messages
     usage: /<command> <player> [length] [reason]
     default: op
-  unban: #
+  unban:
     description: Unbans a player
     usage: /<command> <player>
     default: op
-  unbanip: #
+  unbanip:
     description: Unbans an IP
     usage: /<command> <player|IP>
     default: op
-  uncmute: #
+  uncmute:
     description: Undoes a command-mute
     usage: /<command> <player>
     default: op
-  unmute: #
+  unmute:
     description: Unmutes a player
     usage: /<command> <player>
     default: op
