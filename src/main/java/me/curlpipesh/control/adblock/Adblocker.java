@@ -43,34 +43,36 @@ public class Adblocker implements Listener {
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onAsyncPlayerChat(AsyncPlayerChatEvent e) {
+        if(control.getMutes().contains(e.getPlayer().getUniqueId().toString())
+                || control.getMutes().contains(e.getPlayer().getAddress().getAddress().toString())) {
+            // Player is already muted, so we shouldn't care
+            return;
+        }
         String message = e.getMessage().toLowerCase().trim();
         Matcher matcher = adRegex.matcher(message);
         if(matcher.find()) {
             control.sendMessage(e.getPlayer(), adCheckMessage);
             String match = matcher.group().replaceAll("(?i)(http(s)*://)*", "");
             String[] finalCheck;
-            int port = -1;
-            // TODO This seems really inefficient?
-            if(matcher.group(matcher.groupCount()) != null && match.contains(":")) {
-                String ip = match.substring(0, match.lastIndexOf(":"));
-                int i1 = matcher.start(matcher.groupCount());
-                int i2 = matcher.start(matcher.groupCount());
-                String portString = message.substring(i1 + 1, i2);
-                try {
-                    port = Integer.parseInt(portString);
-                } catch(Exception ignored) {}
-                finalCheck = (match.replaceAll("(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)+", ".") + (port > -1 ? ":" + port : ":25565")).split(":");
-            } else {
-                finalCheck = (match.replaceAll("(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)+", ".") + ":25565").split(":");
+            int port = 25565;
+            if(match.contains(":")) {
+                String portString = match.split(":")[1].trim();
+                if(!portString.equals("25565")) {
+                    try {
+                        port = Integer.parseInt(portString);
+                    } catch(Exception ignored) {}
+                }
             }
+            finalCheck = (match.replaceAll("(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)+", ".") + ":" + port).split(":");
             Server server = new Server(control, finalCheck[0], finalCheck[1]);
             if(server.isOnline()) {
                 e.setCancelled(true);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(control, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
                         punishmentType + " " + e.getPlayer().getName() + " t:" + punishmentLength + " Advertising | Automated punishment"), 0L);
+                int p = port;
                 Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp)
                         .forEach(player -> control.sendMessage(player, ChatColor.RED + e.getPlayer().getName() +
-                                ChatColor.GRAY + " tried to advertise: " + server.getIp()));
+                                ChatColor.GRAY + " tried to advertise: " + finalCheck[0] + (p != 25565 ? ":" + finalCheck[1] : "")));
             } else {
                 control.sendMessage(e.getPlayer(), notAnAdMessage);
             }

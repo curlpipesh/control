@@ -203,7 +203,7 @@ public class Control extends JavaPlugin {
                 String uuid = e.getPlayer().getUniqueId().toString();
                 String ip = e.getPlayer().getAddress().getAddress().toString();
                 if(mutes.contains(uuid) || mutes.contains(ip)) {
-                    sendMessage(e.getPlayer(), "You're still muted! You can't talk!");
+                    sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
                     e.setCancelled(true);
                 }
             }

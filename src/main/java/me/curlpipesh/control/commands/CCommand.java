@@ -27,6 +27,6 @@ public abstract class CCommand implements CommandExecutor {
     protected final void announcePunishment(String issuer, String player, String punishment, String reason, String length) {
         String m = String.format("§7%s §c%s§7 %s for %s:", issuer,
                 Punishments.english(punishment), player, TimeUtil.english(length));
-        control.broadcastImportantMessage(m, "§7" + reason);
+        control.broadcastImportantMessage(m, "§c" + reason);
     }
 }

@@ -119,7 +119,6 @@ public class GenericPunishmentCommand extends CCommand {
                                         p.isPresent() ? p.get().getEnd() : "Some point in the future"),
                                 () -> Bukkit.getOfflinePlayer(essUser.getConfigUUID()).isOnline());
                     } else if(punishIP) {
-                        System.out.println(finalTarget);
                         for(Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
                                             (t ? TimeUtil.english(args[1]) : "Forever"),
@@ -165,12 +164,14 @@ public class GenericPunishmentCommand extends CCommand {
         if(activePunishments.isEmpty()) {
             getControl().sendMessage(commandSender, noUndoString);
         } else {
-            Punishment p = activePunishments.get(activePunishments.size() - 1);
-            getControl().getActivePunishments().removePunishment(p);
-            getControl().getInactivePunishments().insertPunishment(p);
-            handlePunishment(type, target);
-            getControl().sendMessage(commandSender,
-                    formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser != null ? essUser.getName() : target, p.getType()));
+            Bukkit.getScheduler().scheduleSyncDelayedTask(getControl(), () -> {
+                Punishment p = activePunishments.get(activePunishments.size() - 1);
+                getControl().getActivePunishments().removePunishment(p);
+                getControl().getInactivePunishments().insertPunishment(p);
+                handlePunishment(type, target);
+                getControl().sendMessage(commandSender,
+                        formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser != null ? essUser.getName() : target, p.getType()));
+            }, 0L);
         }
     }
 

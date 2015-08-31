@@ -68,15 +68,15 @@ public class CommandWarns extends CCommand {
                                 Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :
                                 p.getIssuer() :
                         getEssentials().getUser(p.getIssuer()).getName();
-        String m = String.format("§7#§a%s§7 - §a%s§7", p.getId(), issuer);
-        TextComponent line = new TextComponent(m);
-        HoverEvent e = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("On: ").color(ChatColor.DARK_PURPLE).append(p.getStart()).color(ChatColor.RESET)
-                        .append("\n").color(ChatColor.RESET).append("For: ").color(ChatColor.DARK_PURPLE)
-                        .append(p.getReason()).color(ChatColor.RESET).create());
-        line.setHoverEvent(e);
         if(commandSender instanceof Player) {
-            ((Player)commandSender).spigot().sendMessage(line);
+            String m = String.format("§7#§a%s§7 - §a%s§7", p.getId(), issuer);
+            TextComponent line = new TextComponent(m);
+            HoverEvent e = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("On: ").color(ChatColor.DARK_PURPLE).append(p.getStart()).color(ChatColor.RESET)
+                            .append("\n").color(ChatColor.RESET).append("For: ").color(ChatColor.DARK_PURPLE)
+                            .append(p.getReason()).color(ChatColor.RESET).create());
+            line.setHoverEvent(e);
+            ((Player) commandSender).spigot().sendMessage(line);
         } else {
             commandSender.sendMessage(String.format("#%s - %s: %s", p.getId(), issuer, p.getReason()));
         }

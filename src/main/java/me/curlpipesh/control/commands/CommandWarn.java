@@ -40,8 +40,8 @@ public class CommandWarn extends CCommand {
                 getControl().getActivePunishments().insertPunishment(Punishments.WARN,
                         issuer,
                         essUser.getConfigUUID().toString(), reason, Integer.MAX_VALUE);
-                String m = String.format("§7%s §cwarned§7 %s: %s", issuer2, target, reason);
-                getControl().broadcastMessage(m);
+                String m = String.format("§7%s §cwarned§7 %s:", issuer2, target);
+                getControl().broadcastMessage(m, "§c" + reason);
             } else {
                 commandSender.sendMessage(invalidTargetString.replaceAll("<name>", args[0]));
             }

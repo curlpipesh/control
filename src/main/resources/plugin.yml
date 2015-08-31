@@ -10,56 +10,114 @@ commands:
   audit:
     description: Shows all punishments issued by a player
     usage: /<command> <player>
-    default: op
+    permission: control.audit
   ban:
     description: Bans a player
     usage: /<command> <player> [length] [reason]
-    default: op
+    permission: control.ban
   banip:
     description: Bans an IP
     usage: /<command> <player|IP> [length] [reason]
-    default: op
+    permission: control.banip
   cc:
     description: Alias of /clearchat
     usage: /<command>
-    default: op
+    permission: control.cc
   clearchat:
     description: Clears the chat
     usage: /<command>
-    default: op
+    permission: control.clearchat
   cmute:
     description: Prevents a player from using commands
     usage: /<command> <player> [length] [reason]
-    default: op
+    permission: control.cmute
   history:
     description: Shows all punishments for a player
     usage: /<command> <player>
-    default: op
+    permission: control.history
   mute:
     description: Prevents a player from sending messages
     usage: /<command> <player> [length] [reason]
-    default: op
+    permission: control.mute
   unban:
     description: Unbans a player
     usage: /<command> <player>
-    default: op
+    permission: control.unban
   unbanip:
     description: Unbans an IP
     usage: /<command> <player|IP>
-    default: op
+    permission: control.unbanip
   uncmute:
     description: Undoes a command-mute
     usage: /<command> <player>
-    default: op
+    permission: control.uncmute
   unmute:
     description: Unmutes a player
     usage: /<command> <player>
-    default: op
+    permission: control.unmute
   warn:
     description: Issues a warning to a player
     usage: /<command> <player> [reason]
-    default: op
+    permission: control.warn
   warns:
     description: Shows all warnings for a player
     usage: /<command> <player>
+    permission: control.warns
+
+permissions:
+  control.*:
+    description: All control permissions
+    children:
+      control.audit: true
+      control.ban: true
+      control.banip: true
+      control.clearchat: true
+      control.cmute: true
+      control.history: true
+      control.mute: true
+      control.unban: true
+      control.unbanip: true
+      control.uncmute: true
+      control.unmute: true
+      control.warn: true
+      control.warns: true
+    default: op
+  control.audit:
+    description: Allows use of the /audit command
+    default: op
+  control.ban:
+    description: Allows use of the /ban command
+    default: op
+  control.banip:
+    description: Allows use of the /banip command
+    default: op
+  control.clearchat:
+    description: Allows use of the /cc command
+    default: op
+  control.cmute:
+    description: Allows use of the /cmute command
+    default: op
+  control.history:
+    description: Allows use of the /history command
+    default: op
+  control.mute:
+    description: Allows use of the /mute command
+    default: op
+  control.unban:
+    description: Allows use of the /unban command
+    default: op
+  control.unbanip:
+    description: Allows use of the /unbanip command
+    default: op
+  control.uncmute:
+    description: Allows use of the /uncmute command
+    default: op
+  control.unmute:
+    description: Allows use of the /unmute command
+    default: op
+  control.warn:
+    description: Allows use of the /warn command
+    default: op
+  control.warns:
+    description: Allows use of the /warns command
     default: op
