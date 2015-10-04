@@ -7,6 +7,10 @@ website: http://curlpipesh.me/
 depend: [Essentials]
 
 commands:
+  a:
+    description: Enter admin chat
+    usage: /<command>
+    permission: control.channels.use
   audit:
     description: Shows all punishments issued by a player
     usage: /<command> <player>
@@ -23,6 +27,10 @@ commands:
     description: Alias of /clearchat
     usage: /<command>
     permission: control.cc
+  channel:
+    description: Change admin chat channels, or list available channels
+    usage: /<command> [channel]
+    permission: control.channels.use
   clearchat:
     description: Clears the chat
     usage: /<command>
@@ -35,10 +43,22 @@ commands:
     description: Shows all punishments for a player
     usage: /<command> <player>
     permission: control.history
+  kick:
+    description: Kicks a player
+    usage: /<command> <player>
+    permission: control.kick
   mute:
     description: Prevents a player from sending messages
     usage: /<command> <player> [length] [reason]
     permission: control.mute
+  o:
+    description: Shows the number of players online
+    usage: /<command>
+    permission: control.online
+  ops:
+    description: Show all operators
+    usage: /<command>
+    permission: control.ops
   unban:
     description: Unbans a player
     usage: /<command> <player>
@@ -68,6 +88,9 @@ permissions:
   control.*:
     description: All control permissions
     children:
+      control.channels.adminchat: true
+      control.channels.opchat: true
+      control.channels.use: true
       control.audit: true
       control.ban: true
       control.banip: true
@@ -75,12 +98,23 @@ permissions:
       control.cmute: true
       control.history: true
       control.mute: true
+      control.online: true
+      control.ops: true
       control.unban: true
       control.unbanip: true
       control.uncmute: true
       control.unmute: true
       control.warn: true
       control.warns: true
+    default: op
+  control.channels.adminchat:
+    description: Allows use of the AdminChat channel
+    default: op
+  control.channels.opchat:
+    description: Allows use of the OpChat channel
+    default: op
+  control.channels.use:
+    description: Allows usage of the various channels
     default: op
   control.audit:
     description: Allows use of the /audit command
@@ -100,8 +134,16 @@ permissions:
   control.history:
     description: Allows use of the /history command
     default: op
+  control.kick:
+    description: Allows use of the /kick command
+    default: op
   control.mute:
     description: Allows use of the /mute command
+    default: op
+  control.online:
+    description: Allows use of the /o command
+  control.ops:
+    description: Allows use of the /ops command
     default: op
   control.unban:
     description: Allows use of the /unban command

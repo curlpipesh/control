@@ -26,10 +26,29 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
     private int lastPunishmentId = 0;
 
     public PunishmentDB(@NonNull Control control, @NonNull String dbName) {
+        // TODO: Make id autoincrement at some point
         super(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
                 + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, target TEXT NOT NULL, "
                 + "reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, end TEXT NOT NULL)");
-
+        addInitTask(() -> {
+            try {
+                PreparedStatement s = getConnection()
+                        .prepareStatement(String.format("SELECT * FROM %s WHERE id = (SELECT MAX(id) FROM %s)", getDatabaseName(), getDatabaseName()));
+                ResultSet r = s.executeQuery();
+                r.next();
+                PunishmentDB.this.lastPunishmentId = r.getInt("id") + 1;
+                r.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("################################");
+                System.out.println("IF THIS IS NOT THE FIRST LAUNCH:");
+                System.out.println("Could not load last ID.");
+                System.out.println("Expect things to be broken.");
+                System.out.println("################################");
+                PunishmentDB.this.lastPunishmentId = 0;
+            }
+            System.out.println(String.format("%s: %s", getDatabaseName(), lastPunishmentId));
+        });
     }
 
     @Override
@@ -92,6 +111,7 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
+            System.out.println(lastPunishmentId);
             s.setString(2, p.getType());
             s.setString(3, p.getIssuer());
             s.setString(4, p.getTarget());
@@ -123,6 +143,7 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
+            System.out.println(lastPunishmentId);
             s.setString(2, type);
             s.setString(3, issuer);
             s.setString(4, target);

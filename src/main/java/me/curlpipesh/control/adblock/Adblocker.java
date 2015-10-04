@@ -22,7 +22,9 @@ public class Adblocker implements Listener {
      */
     @SuppressWarnings("SpellCheckingInspection")
     private final Pattern adRegex =
-            Pattern.compile("(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,))*([a-z0-9\\-]+)(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)(\\w+)(\\s*:\\s*\\d+)*(/)*",
+            //Pattern.compile("(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,))*([a-z0-9\\-]+)(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)(\\w+)(\\s*:\\s*\\d+)*(/)*",
+            //Pattern.compile("(?i)(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*(dot|\\.|,)\\s*\\W*\\s*))*([a-z0-9\\-]+)(\\s*\\W*\\s*(dot|\\.|,)\\s*\\W*\\s*)(\\w+)(\\s*:\\s*\\d+)*(/)*",
+            Pattern.compile("(?i)(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*(dot|\\.)\\s*\\W*\\s*))*([a-z0-9\\-]+)(\\s*\\W*\\s*(dot|\\.)\\s*\\W*\\s*)(\\w+)(\\s*:\\s*\\d+)*(/)*",
             Pattern.CASE_INSENSITIVE);
 
     private Control control;

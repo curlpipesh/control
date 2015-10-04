@@ -2,24 +2,32 @@ package me.curlpipesh.control;
 
 import lombok.Getter;
 import me.curlpipesh.control.adblock.Adblocker;
+import me.curlpipesh.control.adminchat.UserMap;
 import me.curlpipesh.control.commands.*;
 import me.curlpipesh.control.db.IPunishmentDB;
+import me.curlpipesh.control.db.PunishmentDB;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishments;
-import me.curlpipesh.control.db.PunishmentDB;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -45,6 +53,9 @@ public class Control extends JavaPlugin {
     @Getter
     private List<String> ipBans = new CopyOnWriteArrayList<>();
 
+    /**
+     * DO NOT EVER CHANGE THIS FOR ANY REASON
+     */
     @Getter
     private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -68,6 +79,8 @@ public class Control extends JavaPlugin {
         prepDBs();
         scheduleCleanupTask();
         registerEventBlockers();
+        registerAdminChat();
+        fixSignHack();
 
         // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
@@ -79,6 +92,7 @@ public class Control extends JavaPlugin {
         getCommand("banip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN));
         getCommand("cmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE));
         getCommand("mute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE));
+        getCommand("kick").setExecutor(new CommandKick(this));
         // Undo commands
         getCommand("unban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN, true));
         getCommand("unbanip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true));
@@ -87,6 +101,9 @@ public class Control extends JavaPlugin {
         // Warning commands
         getCommand("warn").setExecutor(new CommandWarn(this));
         getCommand("warns").setExecutor(new CommandWarns(this));
+        // Other commands
+        getCommand("o").setExecutor(new CommandOnline(this));
+        getCommand("ops").setExecutor(new CommandOps(this));
     }
 
     public void onDisable() {
@@ -108,8 +125,7 @@ public class Control extends JavaPlugin {
         for(String e : message) {
             commandSender.sendMessage(e);
         }
-        // ???
-        // commandSender.sendMessage(String.format("%s%s", chatHeader, chatHeader));
+        commandSender.sendMessage(String.format("%s%s%s", chatHeader, chatPrefix, chatHeader));
     }
 
     public void broadcastMessage(String... message) {
@@ -232,6 +248,101 @@ public class Control extends JavaPlugin {
                 String ip = e.getPlayer().getAddress().getAddress().toString();
                 if(cmutes.contains(uuid) || cmutes.contains(ip)) {
                     e.setCancelled(true);
+                }
+            }
+        }, this);
+    }
+
+    private void registerAdminChat() {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new PlayerMapperTask(), 20L * 50L);
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            @SuppressWarnings("unused")
+            public void onPlayerLoginEvent(final PlayerLoginEvent event) {
+                if(UserMap.getAdminChatUsers().stream()
+                        .filter(a -> a.getUuid().equals(event.getPlayer().getUniqueId()))
+                        .count() == 0L && event.getPlayer().hasPermission("control.channels.use")) {
+                    UserMap.addUser(event.getPlayer());
+                }
+            }
+        }, this);
+        this.getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            @SuppressWarnings("unused")
+            public void onAsyncChatEvent(final AsyncPlayerChatEvent event) {
+                final Optional<UserMap.AdminChatUser> userOptional = UserMap.getAdminChatUsers().stream()
+                        .filter(a -> a.getUuid().equals(event.getPlayer().getUniqueId())).findFirst();
+
+                if (userOptional.isPresent()) {
+                    final UserMap.AdminChatUser user = userOptional.get();
+                    if (Bukkit.getPlayer(user.getUuid()).isOnline()
+                            && (Bukkit.getPlayer(user.getUuid()).isOp()
+                                || Bukkit.getPlayer(user.getUuid()).hasPermission(user.getCurrentChannel().getPermissionNode()))) {
+                        event.setCancelled(true);
+                        UserMap.sendMessageToChannel(user.getCurrentChannel(), event.getPlayer().getDisplayName(), event.getMessage());
+                    }
+                }
+            }
+        }, this);
+        // TODO: /a, /channel
+    }
+
+    /**
+     * Blocks the sign-related exploit that was used in <1.8.7 to crash
+     * clients/servers
+     */
+    private void fixSignHack() {
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onChunkLoad(ChunkLoadEvent event) {
+                for(final BlockState state : event.getChunk().getTileEntities()) {
+                    if(!(state instanceof Sign)) {
+                        continue;
+                    }
+
+                    final Sign sign = (Sign) state;
+
+                    for(int x = 0; x < sign.getLines().length; x++) {
+                        // if the line isn't super long, move on
+                        if(!(sign.getLine(x).length() > 25)) {
+                            continue;
+                        }
+
+                        // otherwise, replace the long string with "???"
+                        sign.setLine(x, "???");
+
+                        // Force-update the sign, without calling a physics update
+                        // UNSURE IF NEEDED //
+                        sign.update(true, false);
+                        Bukkit.getOperators().stream().filter(OfflinePlayer::isOnline)
+                                .forEach(o -> o.getPlayer().sendMessage(String.format("§c###§7 Removed signhack at [%s] (%s, %s, %s) §c###§r",
+                                        event.getWorld().getName(), sign.getLocation().getBlockX(), sign.getLocation().getBlockY(), sign.getLocation().getBlockZ())));
+                    }
+                }
+            }
+        }, this);
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void blockSignHack(SignChangeEvent sign) {
+                for(int x = 0; x < sign.getLines().length; x++) {
+                    // if the line isn't super long, move on
+                    if(!(sign.getLine(x).length() > 25)) {
+                        continue;
+                    }
+
+                    // otherwise, replace the long string with "???"
+                    sign.setLine(x, "???");
+                    //sign.setCancelled(true);
+
+                    Bukkit.getOperators().stream().filter(OfflinePlayer::isOnline)
+                            .forEach(o -> o.getPlayer().sendMessage(String.format("§c###§7 Blocked signhack at [%s] (%s, %s, %s) by §c%s ###§r",
+                                    sign.getPlayer().getWorld().getName(), sign.getPlayer().getLocation().getBlockX(),
+                                    sign.getPlayer().getLocation().getBlockY(), sign.getPlayer().getLocation().getBlockZ(),
+                                    sign.getPlayer().getName())));
+                    /*Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                            String.format("kick %s Attempting to place a crashy sign", sign.getPlayer().getName()));*/
                 }
             }
         }, this);

@@ -51,13 +51,14 @@ public abstract class Database implements IDatabase {
     }
 
     protected final boolean execute(PreparedStatement s) {
-        try {
-            boolean state = s.execute();
-            s.close();
-            return state;
-        } catch(SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+            try {
+                boolean state = s.execute();
+                s.close();
+                control.getLogger().info("If there's a billion exceptions above, that's normal!");
+                return state;
+            } catch(SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
     }
 }
