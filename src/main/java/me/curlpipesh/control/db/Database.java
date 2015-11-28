@@ -54,7 +54,6 @@ public abstract class Database implements IDatabase {
             try {
                 boolean state = s.execute();
                 s.close();
-                control.getLogger().info("If there's a billion exceptions above, that's normal!");
                 return state;
             } catch(SQLException e) {
                 e.printStackTrace();

@@ -111,7 +111,6 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
-            System.out.println(lastPunishmentId);
             s.setString(2, p.getType());
             s.setString(3, p.getIssuer());
             s.setString(4, p.getTarget());
@@ -143,7 +142,6 @@ public class PunishmentDB extends SQLiteDB implements IPunishmentDB {
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", getDatabaseName()));
             s.setInt(1, ++lastPunishmentId);
-            System.out.println(lastPunishmentId);
             s.setString(2, type);
             s.setString(3, issuer);
             s.setString(4, target);

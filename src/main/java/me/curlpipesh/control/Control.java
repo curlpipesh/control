@@ -2,6 +2,7 @@ package me.curlpipesh.control;
 
 import lombok.Getter;
 import me.curlpipesh.control.adblock.Adblocker;
+import me.curlpipesh.control.adminchat.PlayerMapperTask;
 import me.curlpipesh.control.adminchat.UserMap;
 import me.curlpipesh.control.commands.*;
 import me.curlpipesh.control.db.IPunishmentDB;
@@ -101,6 +102,8 @@ public class Control extends JavaPlugin {
         // Warning commands
         getCommand("warn").setExecutor(new CommandWarn(this));
         getCommand("warns").setExecutor(new CommandWarns(this));
+        // Adminchat
+        getCommand("a").setExecutor(new CommandA(this));
         // Other commands
         getCommand("o").setExecutor(new CommandOnline(this));
         getCommand("ops").setExecutor(new CommandOps(this));
@@ -230,11 +233,11 @@ public class Control extends JavaPlugin {
             public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
                 if(bans.contains(e.getUniqueId().toString())) {
                     List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() + "\n\nExpires: " + p.get(p.size() - 1).getEnd());
                 }
                 if(ipBans.contains(e.getAddress().toString().replaceAll("/", ""))) {
                     List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString().replaceAll("/", ""));
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(0).getReason() + "\n\nExpires: " + p.get(0).getEnd());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() + "\n\nExpires: " + p.get(p.size() - 1).getEnd());
                 }
             }
         }, this);
@@ -276,6 +279,7 @@ public class Control extends JavaPlugin {
                 if (userOptional.isPresent()) {
                     final UserMap.AdminChatUser user = userOptional.get();
                     if (Bukkit.getPlayer(user.getUuid()).isOnline()
+                            && user.isTalkingInChannel()
                             && (Bukkit.getPlayer(user.getUuid()).isOp()
                                 || Bukkit.getPlayer(user.getUuid()).hasPermission(user.getCurrentChannel().getPermissionNode()))) {
                         event.setCancelled(true);

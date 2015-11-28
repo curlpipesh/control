@@ -1,4 +1,4 @@
-package me.curlpipesh.control;
+package me.curlpipesh.control.adminchat;
 
 import me.curlpipesh.control.adminchat.UserMap;
 import org.bukkit.Bukkit;
@@ -13,7 +13,7 @@ public class PlayerMapperTask implements Runnable {
     public void run() {
         for(final Player player : Bukkit.getServer().getOnlinePlayers()) {
             final boolean present = UserMap.getAdminChatUsers().stream().filter(a -> a.getUuid().equals(player.getUniqueId())).count() > 0L;
-            if(!present && player.hasPermission("adminchat.use")) {
+            if(!present && player.hasPermission("control.channels.use")) {
                 UserMap.addUser(player);
             }
         }

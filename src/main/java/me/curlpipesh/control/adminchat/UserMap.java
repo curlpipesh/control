@@ -17,7 +17,7 @@ public class UserMap {
         if(player == null) {
             throw new NullPointerException("player");
         }
-        if(player.hasPermission("adminchat.use")) {
+        if(player.hasPermission("control.channels.use")) {
             UserMap.adminChatUsers.add(new AdminChatUser(player));
         }
     }
