@@ -53,9 +53,10 @@ public class UserMap {
 
     public enum Channel {
         ADMIN_CHAT("AdminChat", "control.channels.admin",
-                ChatColor.GRAY + "[" + ChatColor.AQUA + "AdminChat" + ChatColor.GRAY + "] [" + ChatColor.RESET + "%s" + ChatColor.GRAY + "] %s"),
+                ChatColor.GRAY + "[" + ChatColor.AQUA + "AdminChat" + ChatColor.GRAY + "] [" + ChatColor.RESET + "%s" + ChatColor.GRAY + "] %s");
+        /*,
         OP_CHAT("OpChat", "adminchat.channels.op",
-                ChatColor.DARK_GRAY + "[" + ChatColor.RED + "OpChat" + ChatColor.DARK_GRAY + "] [" + ChatColor.RESET + "%s" + ChatColor.DARK_GRAY + "]" + ChatColor.GRAY + " %s");
+                ChatColor.DARK_GRAY + "[" + ChatColor.RED + "OpChat" + ChatColor.DARK_GRAY + "] [" + ChatColor.RESET + "%s" + ChatColor.DARK_GRAY + "]" + ChatColor.GRAY + " %s");*/
 
         @Getter
         private final String name;
@@ -63,7 +64,7 @@ public class UserMap {
         private final String permissionNode;
         @Getter
         private final String formatString;
-        
+
         Channel(@NonNull final String name, final String permissionNode, final String formatString) {
             if(name == null) {
                 throw new NullPointerException("name");

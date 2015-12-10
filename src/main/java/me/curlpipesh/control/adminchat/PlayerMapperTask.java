@@ -1,6 +1,5 @@
 package me.curlpipesh.control.adminchat;
 
-import me.curlpipesh.control.adminchat.UserMap;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -11,10 +10,12 @@ import org.bukkit.entity.Player;
 public class PlayerMapperTask implements Runnable {
     @Override
     public void run() {
+        Bukkit.getLogger().info("Mapping AdminChat users...");
         for(final Player player : Bukkit.getServer().getOnlinePlayers()) {
             final boolean present = UserMap.getAdminChatUsers().stream().filter(a -> a.getUuid().equals(player.getUniqueId())).count() > 0L;
-            if(!present && player.hasPermission("control.channels.use")) {
+            if(!present && (player.hasPermission("control.channels.use") || player.isOp())) {
                 UserMap.addUser(player);
+                Bukkit.getLogger().info("Added AdminChat user: " + player.getName());
             }
         }
     }

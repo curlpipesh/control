@@ -19,7 +19,8 @@ public class CommandClearChat extends CCommand {
         for(int i = 0; i < 100; i++) {
             Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(""));
         }
-        Bukkit.broadcastMessage("§5§lSpace§7§l:§7 Chat was cleared by §c" + commandSender.getName() + "§7!");
+        //Bukkit.broadcastMessage("§5§lSpace§7§l:§7 Chat was cleared by §c" + commandSender.getName() + "§7!");
+        this.getControl().broadcastMessage("§7Chat was cleared by §c" + commandSender.getName() + "§7!");
         return true;
     }
 }

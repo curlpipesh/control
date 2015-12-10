@@ -59,6 +59,10 @@ commands:
     description: Show all operators
     usage: /<command>
     permission: control.ops
+  plgrep:
+    description: Grep plugin list for a string
+    usage: /<command> <string>
+    permission: control.plgrep
   unban:
     description: Unbans a player
     usage: /<command> <player>
@@ -144,6 +148,9 @@ permissions:
     description: Allows use of the /o command
   control.ops:
     description: Allows use of the /ops command
+    default: op
+  control.plgrep:
+    description: Allows use of the /plgrep command
     default: op
   control.unban:
     description: Allows use of the /unban command
