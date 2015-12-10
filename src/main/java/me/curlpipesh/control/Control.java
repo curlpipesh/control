@@ -185,7 +185,7 @@ public class Control extends JavaPlugin {
                 case Punishments.WARN:
                     break;
                 default:
-                    getLogger().warning("I don't know what \"" + p.getType() + "\" warning type is?");
+                    getLogger().warning("I don't know what \"" + p.getType() + "\" punishment type is?");
                     break;
             }
         });
