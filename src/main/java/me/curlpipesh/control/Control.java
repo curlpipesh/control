@@ -67,6 +67,10 @@ public class Control extends JavaPlugin {
 
     private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix());
 
+    private String lastPlayer = "";
+
+    private boolean welcEnabled = true;
+
     public Control() {
         String sqlmode = getConfig().getString("sql-mode");
         if(sqlmode.equalsIgnoreCase("sqlite")) {

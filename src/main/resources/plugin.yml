@@ -43,6 +43,10 @@ commands:
     description: Shows all punishments for a player
     usage: /<command> <player>
     permission: control.history
+  info:
+    description: Shows information about server hardware
+    uasge: /<command>
+    permission: control.info
   kick:
     description: Kicks a player
     usage: /<command> <player>

@@ -1,13 +1,12 @@
 package me.curlpipesh.control.adblock;
 
-import net.md_5.bungee.api.ChatColor;
 import me.curlpipesh.control.Control;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.permissions.ServerOperator;
 
 import java.util.regex.Matcher;
@@ -23,11 +22,14 @@ public class Adblocker implements Listener {
      * This is magic. Don't question this regex. Test it in regexr if you don't believe me.
      */
     @SuppressWarnings("SpellCheckingInspection")
-    private final Pattern adRegex =
+    /*private final Pattern adRegex =
             //Pattern.compile("(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,))*([a-z0-9\\-]+)(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)(\\w+)(\\s*:\\s*\\d+)*(/)*",
             //Pattern.compile("(?i)(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*(dot|\\.|,)\\s*\\W*\\s*))*([a-z0-9\\-]+)(\\s*\\W*\\s*(dot|\\.|,)\\s*\\W*\\s*)(\\w+)(\\s*:\\s*\\d+)*(/)*",
-            Pattern.compile("(?i)(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*(dot|\\.)\\s*\\W*\\s*))*([a-z0-9\\-]+)(\\s*\\W*\\s*(dot|\\.)\\s*\\W*\\s*)(\\w+)(\\s*:\\s*\\d+)*(/)*",
-            Pattern.CASE_INSENSITIVE);
+            Pattern.compile("(?i)(http(s)*://\\s*)*([a-z0-9\\-]+(\\s*\\W*\\s*(dot|\\.)?\\s*\\W*\\s*))*([a-z0-9\\-]+)(\\s*\\W*\\s*(dot|\\.)?\\s*\\W*\\s*)(\\w+)(\\s*:\\s*\\d+)*(/)*",
+            Pattern.CASE_INSENSITIVE);*/
+
+    private final Pattern urlRegex = Pattern.compile("(?i)(([a-z0-9])+([\\.|\\s])+){1,2}([a-z]{1,10})", Pattern.CASE_INSENSITIVE);
+    private final Pattern ipRegex = Pattern.compile("(?i)(([0-9]){1,3}([\\.|\\s])){3}([0-9]){1,3}", Pattern.CASE_INSENSITIVE);
 
     private Control control;
     private String punishmentType;
@@ -53,10 +55,19 @@ public class Adblocker implements Listener {
             return;
         }
         String message = e.getMessage().toLowerCase().trim();
-        Matcher matcher = adRegex.matcher(message);
+        Matcher matcher = urlRegex.matcher(message);
+        if(!matcher.find()) {
+            control.getLogger().info("Couldn't find URL, trying IP...");
+            matcher = ipRegex.matcher(message);
+        } else {
+            control.getLogger().info("Resetting URL matcher....");
+            matcher.reset();
+        }
         if(matcher.find()) {
+            control.getLogger().info("Checking match: " + matcher.toString());
+
             control.sendMessage(e.getPlayer(), adCheckMessage);
-            String match = matcher.group().replaceAll("(?i)(http(s)*://)*", "");
+            String match = matcher.group().replaceAll("(?i)(http(s)*://)*", "").trim().replaceAll(" ", ".").trim();
             String[] finalCheck;
             int port = 25565;
             if(match.contains(":")) {
@@ -64,11 +75,13 @@ public class Adblocker implements Listener {
                 if(!portString.equals("25565")) {
                     try {
                         port = Integer.parseInt(portString);
-                    } catch(Exception ignored) {}
+                    } catch(Exception ignored) {
+                    }
                 }
             }
-            finalCheck = (match.replaceAll("(\\s*\\W*\\s*dot\\s*\\W*\\s*|\\.|,)+", ".") + ":" + port).split(":");
-            Server server = new Server(control, finalCheck[0], finalCheck[1]);
+            finalCheck = (match + ":" + port).split(":");
+            Server server = new Server(control, finalCheck[0].trim(), finalCheck[1].trim());
+            control.getLogger().info("Final check: " + finalCheck[0].trim() + ":" + finalCheck[1].trim());
             if(server.isOnline()) {
                 e.setCancelled(true);
                 Bukkit.getScheduler().scheduleSyncDelayedTask(control, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
@@ -76,16 +89,16 @@ public class Adblocker implements Listener {
                 int p = port;
                 Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp)
                         .forEach(player -> control.sendMessage(player, ChatColor.RED + e.getPlayer().getName() +
-                                ChatColor.GRAY + " tried to advertise: " + finalCheck[0] + (p != 25565 ? ":" + finalCheck[1] : "")));
+                                ChatColor.GRAY + " tried to advertise: " + ChatColor.RED + finalCheck[0] + (p != 25565 ? ":" + finalCheck[1] : "")));
             } else {
                 control.sendMessage(e.getPlayer(), notAnAdMessage);
             }
         }
     }
 
-    @SuppressWarnings("unused")
+    //@SuppressWarnings("unused")
     //@EventHandler(priority = EventPriority.HIGHEST)
-    public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
+    /*public void onCommandPreprocess(PlayerCommandPreprocessEvent e) {
         if(control.getMutes().contains(e.getPlayer().getUniqueId().toString())
                 || control.getMutes().contains(e.getPlayer().getAddress().getAddress().toString())) {
             // Player is already muted, so we shouldn't care
@@ -120,5 +133,5 @@ public class Adblocker implements Listener {
                 control.sendMessage(e.getPlayer(), notAnAdMessage);
             }
         }
-    }
+    }*/
 }
