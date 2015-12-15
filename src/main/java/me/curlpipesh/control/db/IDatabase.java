@@ -1,5 +1,10 @@
 package me.curlpipesh.control.db;
 
+import me.curlpipesh.control.Control;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.List;
 
 /**
@@ -23,4 +28,16 @@ public interface IDatabase {
     boolean addInitTask(Runnable task);
 
     boolean doesDriverExist();
+
+    Connection getConnection();
+
+    String getDatabaseName();
+
+    void setDatabaseName(String name);
+
+    File getDatabaseFile();
+
+    Control getPlugin();
+
+    boolean execute(PreparedStatement s);
 }

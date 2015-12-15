@@ -10,14 +10,14 @@ import java.sql.Statement;
 
 /**
  * @author audrey
- * @since 8/23/15.
+ * @since 12/14/15.
  */
 @SuppressWarnings("Duplicates")
-public class SQLiteDB extends Database {
+public class MySQLDB extends Database {
     @Getter
     private final String initializationStatement;
 
-    public SQLiteDB(@NonNull Control control, @NonNull String dbName, @NonNull String initializationStatement) {
+    public MySQLDB(@NonNull Control control, @NonNull String dbName, @NonNull String initializationStatement) {
         super(control, dbName);
         this.initializationStatement = initializationStatement;
     }
@@ -25,11 +25,11 @@ public class SQLiteDB extends Database {
     @Override
     public boolean connect() {
         if(!getDatabaseFile().exists()) {
-            getPlugin().getLogger().warning("SQLite DB \"" + getDatabaseName() + "\" doesn't exist, creating...");
+            getPlugin().getLogger().warning("MySQL DB \"" + getDatabaseName() + "\" doesn't exist, creating...");
         }
         if(doesDriverExist()) {
             try {
-                setConnection(DriverManager.getConnection("jdbc:sqlite:" + getDatabaseFile().getPath()));
+                setConnection(DriverManager.getConnection("jdbc:mysql:" + getDatabaseFile().getPath()));
                 getConnection().setAutoCommit(true);
                 setConnected(true);
                 return true;
@@ -39,7 +39,7 @@ public class SQLiteDB extends Database {
             }
         } else {
             getPlugin().getLogger().warning("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
-            getPlugin().getLogger().warning("SQLite DB driver doesn't exist! Do NOT expect any sort of functionality!!");
+            getPlugin().getLogger().warning("MySQL DB driver doesn't exist! Do NOT expect any sort of functionality!!");
             getPlugin().getLogger().warning("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
             return false;
         }
@@ -80,7 +80,7 @@ public class SQLiteDB extends Database {
     @Override
     public boolean doesDriverExist() {
         try {
-            Class.forName("org.sqlite.JDBC");
+            Class.forName("com.mysql.jdbc.Driver");
             return true;
         } catch(ClassNotFoundException e) {
             e.printStackTrace();

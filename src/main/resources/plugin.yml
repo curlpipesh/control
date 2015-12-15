@@ -101,9 +101,12 @@ permissions:
       control.clearchat: true
       control.cmute: true
       control.history: true
+      control.info: true
+      control.kick: true
       control.mute: true
       control.online: true
       control.ops: true
+      control.plgrep: true
       control.unban: true
       control.unbanip: true
       control.uncmute: true
@@ -137,6 +140,9 @@ permissions:
     default: op
   control.history:
     description: Allows use of the /history command
+    default: op
+  control.info:
+    description: Allows use of the /info command
     default: op
   control.kick:
     description: Allows use of the /kick command

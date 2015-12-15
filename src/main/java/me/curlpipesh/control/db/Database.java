@@ -26,11 +26,11 @@ public abstract class Database implements IDatabase {
     private File databaseFile;
 
     @Getter
-    private final Control control;
-
-    @Getter
     @Setter
     private Connection connection;
+
+    @Getter
+    private Control plugin;
 
     @Getter
     @Setter
@@ -39,10 +39,10 @@ public abstract class Database implements IDatabase {
     @Getter
     private final List<Runnable> initializationTasks;
 
-    public Database(@NonNull Control control, @NonNull String databaseName) {
+    public Database(@NonNull Control plugin, @NonNull String databaseName) {
         this.databaseName = databaseName;
-        this.control = control;
-        databaseFile = new File(control.getDataFolder() + File.separator + databaseName + ".db");
+        this.plugin = plugin;
+        databaseFile = new File(plugin.getDataFolder() + File.separator + databaseName + ".db");
         initializationTasks = new CopyOnWriteArrayList<>();
     }
 
@@ -50,7 +50,7 @@ public abstract class Database implements IDatabase {
         return initializationTasks.add(task);
     }
 
-    protected final boolean execute(PreparedStatement s) {
+    public final boolean execute(PreparedStatement s) {
             try {
                 boolean state = s.execute();
                 s.close();

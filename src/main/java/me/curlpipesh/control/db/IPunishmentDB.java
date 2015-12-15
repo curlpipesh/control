@@ -11,7 +11,7 @@ import java.util.Optional;
  * @since 8/28/15.
  */
 @SuppressWarnings("unused")
-public interface IPunishmentDB extends IDatabase {
+public interface IPunishmentDB {
     List<Punishment> getPunishments(@NonNull String target);
 
     List<Punishment> getPunishmentsBy(@NonNull String issuer);
@@ -31,4 +31,6 @@ public interface IPunishmentDB extends IDatabase {
     int getLastPunishmentId();
 
     void setLastPunishmentId(int i);
+
+    IDatabase getDatabaseBackend();
 }

@@ -1,8 +1,8 @@
-package me.curlpipesh.control.adminchat.bot.commands;
+package me.curlpipesh.control.commands;
 
-import me.curlpipesh.control.adminchat.bot.AdminChatBot;
-import me.curlpipesh.control.adminchat.bot.BotCommand;
+import me.curlpipesh.control.Control;
 import org.apache.commons.io.FileUtils;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.lang.management.ManagementFactory;
@@ -11,19 +11,15 @@ import java.util.List;
 
 /**
  * @author audrey
- * @since 12/6/15.
+ * @since 12/14/15.
  */
-public class CommandInfo extends BotCommand {
-    public CommandInfo() {
-        super("Info", "Displays a pile of server info", "info");
-        // Me
-        allowUuid("71a9fabe-6301-467c-85b9-694bc7783723");
-        // Mewn
-        allowUuid("78e4b9ec-20ff-4a57-91db-7ed5700b1671");
+public class CommandInfo extends CCommand {
+    public CommandInfo(final Control control) {
+        super(control);
     }
 
     @Override
-    public void onCommand(final CommandSender sender, final String command, final String[] args) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] strings) {
         final String freeMemory = "§7Free Memory: §e" + FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory());
         final String maxMemory = "§7Max Memory: §e" + FileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory());
         final String totalMemory = "§7Total Memory: §e" + FileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory());
@@ -49,6 +45,7 @@ public class CommandInfo extends BotCommand {
         messages.add(runtimeInfo);
         messages.add(osInfo);
         messages.add(cpuThreads);
-        AdminChatBot.getControl().sendMessage(sender, messages.stream().toArray(String[]::new));
+        getControl().sendMessage(commandSender, messages.stream().toArray(String[]::new));
+        return true;
     }
 }

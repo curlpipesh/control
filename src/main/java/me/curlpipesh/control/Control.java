@@ -4,13 +4,12 @@ import lombok.Getter;
 import me.curlpipesh.control.adblock.Adblocker;
 import me.curlpipesh.control.adminchat.PlayerMapperTask;
 import me.curlpipesh.control.adminchat.UserMap;
-import me.curlpipesh.control.adminchat.bot.AdminChatBot;
 import me.curlpipesh.control.commands.*;
 import me.curlpipesh.control.db.IPunishmentDB;
 import me.curlpipesh.control.db.PunishmentDB;
+import me.curlpipesh.control.fixes.Fix;
 import me.curlpipesh.control.fixes.NetherTopFix;
 import me.curlpipesh.control.fixes.SignHackFix;
-import me.curlpipesh.control.fixes.Fix;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishments;
 import org.bukkit.Bukkit;
@@ -37,10 +36,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Control extends JavaPlugin {
     @Getter
-    private final IPunishmentDB activePunishments = new PunishmentDB(this, "active_punishments");
+    private final IPunishmentDB activePunishments;
 
     @Getter
-    private final IPunishmentDB inactivePunishments = new PunishmentDB(this, "inactive_punishments");
+    private final IPunishmentDB inactivePunishments;
 
     @Getter
     private List<String> mutes = new CopyOnWriteArrayList<>();
@@ -67,6 +66,19 @@ public class Control extends JavaPlugin {
     private String chatHeader;
 
     private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix());
+
+    public Control() {
+        String sqlmode = getConfig().getString("sql-mode");
+        if(sqlmode.equalsIgnoreCase("sqlite")) {
+            activePunishments = new PunishmentDB(this, "active_punishments", PunishmentDB.DBMode.SQLITE);
+            inactivePunishments = new PunishmentDB(this, "inactive_punishments", PunishmentDB.DBMode.SQLITE);
+        }/* else if(sqlmode.equalsIgnoreCase("mysql")) {
+            activePunishments = new PunishmentDB(this, "active_punishments", PunishmentDB.DBMode.MYSQL);
+            inactivePunishments = new PunishmentDB(this, "inactive_punishments", PunishmentDB.DBMode.MYSQL);
+        } */else {
+            throw new IllegalArgumentException("'" + sqlmode + "' is not a valid SQL mode!");
+        }
+    }
 
     public void onEnable() {
         if(!this.getDataFolder().exists()) {
@@ -111,10 +123,11 @@ public class Control extends JavaPlugin {
         getCommand("o").setExecutor(new CommandOnline(this));
         getCommand("ops").setExecutor(new CommandOps(this));
         getCommand("plgrep").setExecutor(new CommandPlgrep(this));
+        getCommand("info").setExecutor(new CommandInfo(this));
     }
 
     public void onDisable() {
-        if(activePunishments.disconnect() && inactivePunishments.disconnect()) {
+        if(activePunishments.getDatabaseBackend().disconnect() && inactivePunishments.getDatabaseBackend().disconnect()) {
             getLogger().info("Successfully disconnected from the databases!");
         } else {
             throw new IllegalStateException("Unable to disconnect from the databases!");
@@ -150,9 +163,9 @@ public class Control extends JavaPlugin {
     }
 
     private void prepDBs() {
-        if(activePunishments.connect() && inactivePunishments.connect()) {
+        if(activePunishments.getDatabaseBackend().connect() && inactivePunishments.getDatabaseBackend().connect()) {
             getLogger().info("Connected to the databases!");
-            if(activePunishments.initialize() && inactivePunishments.initialize()) {
+            if(activePunishments.getDatabaseBackend().initialize() && inactivePunishments.getDatabaseBackend().initialize()) {
                 if(inactivePunishments.getLastPunishmentId() > activePunishments.getLastPunishmentId()) {
                     activePunishments.setLastPunishmentId(inactivePunishments.getLastPunishmentId());
                 }
@@ -292,7 +305,5 @@ public class Control extends JavaPlugin {
                 }
             }
         }, this);
-        // TODO: /a, /channel
-        AdminChatBot.register(this);
     }
 }
