@@ -3,7 +3,7 @@ main: me.curlpipesh.control.Control
 version: 0.1.0
 description: skirts' plugin for banning and whatnot
 authors: [skirts]
-website: http://curlpipesh.me/
+website: https://curlpipesh.me/
 depend: [Essentials]
 
 commands:
