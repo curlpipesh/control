@@ -55,17 +55,19 @@ public class PunishmentDB implements IPunishmentDB {
                 r.close();
             } catch(Exception e) {
                 e.printStackTrace();
-                System.out.println("################################");
-                System.out.println("IF THIS IS NOT THE FIRST LAUNCH:");
-                System.out.println("Could not load last ID.");
-                System.out.println("Expect things to be broken.");
-                System.out.println("################################");
+                // Pointless spacing, ik, but.
+                System.out.println("#############################################################");
+                System.out.println("IF THIS IS NOT THE FIRST LAUNCH OR NO (IN)ACTIVE PUNISHMENTS:");
+                System.out.println("Could not load last ID.                                      ");
+                System.out.println("Expect things to be broken.                                  ");
+                System.out.println("#############################################################");
                 PunishmentDB.this.lastPunishmentId = 0;
             }
             System.out.println(String.format("%s: %s", databaseBackend.getDatabaseName(), lastPunishmentId));
         });
     }
 
+    @SuppressWarnings("unused")
     public PunishmentDB(@NonNull Control control, @NonNull String dbName) {
         this(control, dbName, DBMode.SQLITE);
     }

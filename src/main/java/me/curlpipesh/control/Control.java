@@ -71,6 +71,8 @@ public class Control extends JavaPlugin {
 
     private boolean welcEnabled = true;
 
+    private List<String> cmuteCommandsToBlock = null;
+
     public Control() {
         String sqlmode = getConfig().getString("sql-mode");
         if(sqlmode.equalsIgnoreCase("sqlite")) {
@@ -79,7 +81,7 @@ public class Control extends JavaPlugin {
         }/* else if(sqlmode.equalsIgnoreCase("mysql")) {
             activePunishments = new PunishmentDB(this, "active_punishments", PunishmentDB.DBMode.MYSQL);
             inactivePunishments = new PunishmentDB(this, "inactive_punishments", PunishmentDB.DBMode.MYSQL);
-        } */else {
+        } */ else {
             throw new IllegalArgumentException("'" + sqlmode + "' is not a valid SQL mode!");
         }
     }
@@ -95,12 +97,13 @@ public class Control extends JavaPlugin {
         saveDefaultConfig();
         chatPrefix = getConfig().getString("chat-prefix");
         chatHeader = getConfig().getString("chat-header");
+        cmuteCommandsToBlock = getConfig().getStringList("cmute-blocked-cmds");
         prepDBs();
         scheduleCleanupTask();
         registerEventBlockers();
         registerAdminChat();
-        //fixSignHack();
         fixes.stream().forEach(f -> f.fix(this));
+        readyWelc();
 
         // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
@@ -271,7 +274,13 @@ public class Control extends JavaPlugin {
                 String uuid = e.getPlayer().getUniqueId().toString();
                 String ip = e.getPlayer().getAddress().getAddress().toString();
                 if(cmutes.contains(uuid) || cmutes.contains(ip)) {
-                    e.setCancelled(true);
+                    if(cmuteCommandsToBlock.isEmpty()) {
+                        sendMessage(e.getPlayer(), "§7You're still command-muted! You can't do that!");
+                        e.setCancelled(true);
+                    } else if(cmuteCommandsToBlock.contains(e.getMessage().split(" ")[0].replaceAll("/", ""))) {
+                        sendMessage(e.getPlayer(), "§7You're still command-muted! You can't do that!");
+                        e.setCancelled(true);
+                    }
                 }
             }
         }, this);
@@ -297,14 +306,39 @@ public class Control extends JavaPlugin {
                 final Optional<UserMap.AdminChatUser> userOptional = UserMap.getAdminChatUsers().stream()
                         .filter(a -> a.getUuid().equals(event.getPlayer().getUniqueId())).findFirst();
 
-                if (userOptional.isPresent()) {
+                if(userOptional.isPresent()) {
                     final UserMap.AdminChatUser user = userOptional.get();
-                    if (Bukkit.getPlayer(user.getUuid()).isOnline()
+                    if(Bukkit.getPlayer(user.getUuid()).isOnline()
                             && user.isTalkingInChannel()
                             && (Bukkit.getPlayer(user.getUuid()).isOp()
-                                || Bukkit.getPlayer(user.getUuid()).hasPermission(user.getCurrentChannel().getPermissionNode()))) {
+                            || Bukkit.getPlayer(user.getUuid()).hasPermission(user.getCurrentChannel().getPermissionNode()))) {
                         event.setCancelled(true);
                         UserMap.sendMessageToChannel(user.getCurrentChannel(), event.getPlayer().getDisplayName(), event.getMessage());
+                    }
+                }
+            }
+        }, this);
+    }
+
+    private void readyWelc() {
+        lastPlayer = "";
+        welcEnabled = getConfig().getBoolean("welc-enabled", true);
+        getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            @SuppressWarnings("unused")
+            public void onPlayerLoginEvent(PlayerLoginEvent e) {
+                if(welcEnabled) {
+                    lastPlayer = e.getPlayer().getPlayer().getName();
+                }
+            }
+        }, this);
+        getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            @SuppressWarnings("unused")
+            public void onAsyncPlayerChatEvent(AsyncPlayerChatEvent e) {
+                if(welcEnabled) {
+                    if(e.getMessage().equalsIgnoreCase("welc")) {
+                        e.setMessage("Welcome, " + lastPlayer + "!");
                     }
                 }
             }

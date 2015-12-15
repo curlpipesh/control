@@ -1,5 +1,5 @@
 # Valid formatters: <reason>, <time>, <end>
-ban-message: "§4BANNED§r: <reason>\n\n§rThis ban will last for: §c <time>§r\n\n§rExpiring at: §c<end>§r"
+ban-message: "§4BANNED§r: <reason>\n\n§rThis ban will last for: §c<time>§r\n\n§rExpiring at: §c<end>§r"
 
 # Command appearances.
 no-undo: "Nothing to do here!"
@@ -13,7 +13,7 @@ chat-prefix: "§8§l[§5§lControl§8§l]§r"
 chat-header: "§8§l§m------------§r"
 
 # For automatic advertisement punishment
-# "ban" "mute" "banip"
+# Valid values: "mute", "ban", "banip"
 punishment-type: "mute"
 # #<m/h/d/w>
 # 10m - 10 minutes
@@ -31,3 +31,10 @@ not-ad-message: "§7You're not advertising. Sorry about that."
 # This is because SQLite is serverless so less painful to develop for...
 # NEVER CHANGE THIS ONCE IT HAS BEEN SET
 sql-mode: "sqlite"
+
+# Commands that cmute will block
+# Empty array blocks all commands
+cmute-blocked-cmds: []
+
+# Whether or not typing 'welc' in chat sends 'Welcome, <last player to log in>!'
+welc-enabled: true
