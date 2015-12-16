@@ -38,11 +38,13 @@ public class Server {
             }
             this.data = String.format("Ver: %s, Players: %s/%s", response.getVersion().getName(), response.getPlayers().getOnline(), response.getPlayers().getMax());
         } catch(Exception e) {
+            e.printStackTrace();
             return false;
         }
         return true;
     }
 
+    @SuppressWarnings("unused")
     public String getData() {
         return this.data;
     }

@@ -1,6 +1,7 @@
 package me.curlpipesh.control.adblock;
 
 import com.google.gson.Gson;
+import org.bukkit.Bukkit;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -61,8 +62,8 @@ public class ServerListPing {
     }
 
     public StatusResponse fetchData() throws IOException {
-        final Socket socket = new Socket();
-        try {
+        try(Socket socket = new Socket()) {
+            Bukkit.getLogger().info("Host: '" + host + "'");
             socket.setSoTimeout(this.timeout);
             socket.connect(this.host, this.timeout);
             final OutputStream outputStream = socket.getOutputStream();
@@ -84,17 +85,17 @@ public class ServerListPing {
             final DataInputStream dataInputStream = new DataInputStream(inputStream);
             final int size = this.readVarInt(dataInputStream);
             int id = this.readVarInt(dataInputStream);
-            if (id == -1) {
+            if(id == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if (id != 0) {
+            if(id != 0) {
                 throw new IOException("Invalid packetID");
             }
             final int length = this.readVarInt(dataInputStream);
-            if (length == -1) {
+            if(length == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if (length == 0) {
+            if(length == 0) {
                 throw new IOException("Invalid string length.");
             }
             final byte[] in = new byte[length];
@@ -106,24 +107,21 @@ public class ServerListPing {
             dataOutputStream.writeLong(now);
             this.readVarInt(dataInputStream);
             id = this.readVarInt(dataInputStream);
-            if (id == -1) {
+            if(id == -1) {
                 throw new IOException("Premature end of stream.");
             }
-            if (id != 1) {
+            if(id != 1) {
                 throw new IOException("Invalid packetID");
             }
             final long pingtime = dataInputStream.readLong();
-            final StatusResponse response = (StatusResponse)this.gson.fromJson(json, (Class)StatusResponse.class);
-            response.setTime((int)(now - pingtime));
+            final StatusResponse response = (StatusResponse) this.gson.fromJson(json, (Class) StatusResponse.class);
+            response.setTime((int) (now - pingtime));
             dataOutputStream.close();
             outputStream.close();
             inputStreamReader.close();
             inputStream.close();
             socket.close();
             return response;
-        }
-        finally {
-            socket.close();
         }
     }
 

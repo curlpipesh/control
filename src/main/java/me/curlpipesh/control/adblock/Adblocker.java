@@ -59,7 +59,7 @@ public class Adblocker implements Listener {
         if(matcher.find()) {
             control.getLogger().info("Checking match: " + matcher.toString());
 
-            control.sendMessage(e.getPlayer(), adCheckMessage);
+            //control.sendMessage(e.getPlayer(), adCheckMessage);
             String match = matcher.group().replaceAll("(?i)(http(s)*://)*", "").trim().replaceAll(" ", ".").trim();
             String[] finalCheck;
             int port = 25565;
@@ -83,9 +83,9 @@ public class Adblocker implements Listener {
                 Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp)
                         .forEach(player -> control.sendMessage(player, ChatColor.RED + e.getPlayer().getName() +
                                 ChatColor.GRAY + " tried to advertise: " + ChatColor.RED + finalCheck[0] + (p != 25565 ? ":" + finalCheck[1] : "")));
-            } else {
+            } /*else {
                 control.sendMessage(e.getPlayer(), notAnAdMessage);
-            }
+            }*/
         }
     }
 }
