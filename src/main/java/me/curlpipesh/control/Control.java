@@ -12,6 +12,7 @@ import me.curlpipesh.control.fixes.NetherTopFix;
 import me.curlpipesh.control.fixes.SignHackFix;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -106,32 +107,92 @@ public class Control extends SkirtsPlugin {
         readyWelc();
 
         // TODO: Convert to SkirtsCommand format
-        // Utility commands
-        getCommand("audit").setExecutor(new CommandAudit(this));
-        getCommand("clearchat").setExecutor(new CommandClearChat(this));
-        getCommand("cc").setExecutor(new CommandClearChat(this));
-        getCommand("history").setExecutor(new CommandHistory(this));
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("audit")
+                .setDescription("Show all punishments issued by a player").setUsage("/audit <player>")
+                .setPermissionNode("control.audit").setExecutor(new CommandAudit(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("clearchat").addAlias("cc")
+                .setDescription("Clears the chat").setUsage("/clearchat").setPermissionNode("control.clearchat")
+                .setExecutor(new CommandClearChat(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("history")
+                .setDescription("Show all punishments applied to a player").setUsage("/history <player>")
+                .setPermissionNode("control.history").setExecutor(new CommandHistory(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("info").addAlias("specs")
+                .setDescription("Show information about the hardware/software stack the server is running on")
+                .setUsage("/info").setPermissionNode("control.info").setExecutor(new CommandInfo(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("o").addAlias("online")
+                .setDescription("Show the number of users online").setUsage("/o").setPermissionNode("control.online")
+                .setExecutor(new CommandOnline(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("ops")
+                .setDescription("Show all server ops").setUsage("/ops").setPermissionNode("control.ops")
+                .setExecutor(new CommandOps(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("plgrep").addAlias("plugingrep")
+                .setDescription("Grep for a string in the plugin list. Not regex").setUsage("/plgrep <string>")
+                .setPermissionNode("control.plgrep").build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("warns")
+                .setDescription("Show all warnings for a player").setUsage("/warns <player>")
+                .setPermissionNode("control.warns").setExecutor(new CommandWarns(this)).build());
+
         // Punishment commands
-        getCommand("ban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN));
-        getCommand("banip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN));
-        getCommand("cmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE));
-        getCommand("mute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE));
-        getCommand("kick").setExecutor(new CommandKick(this));
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("ban").addAlias("banplayer")
+                .setDescription("Ban a player, for minutes, hours, days, or weeks")
+                .setUsage("/ban <player> [[t:]length<m|h|d|w>] [reason]").setPermissionNode("control.ban")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.BAN)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("banip").addAlias("ipban")
+                .setDescription("Ban an IP, by IP or player, for minutes, hours, days, or weeks")
+                .setUsage("/ban <player|IP> [[t:]length<m|h|d|w>] [reason]")
+                .setPermissionNode("control.banip")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("cmute")
+                .setDescription("Prevents a player from using commands")
+                .setUsage("/cmute <player> [[t:]length<m|h|d|w>] [reason]").setPermissionNode("control.cmute")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("mute")
+                .setDescription("Prevents a player from sending chat messages")
+                .setUsage("/mute <player> [[t:]length<m|h|d|w>] [reason]")
+                .setPermissionNode("control.mute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE))
+                .build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("kick")
+                .setDescription("Kicks a player from the server").setUsage("/kick <player> [reason]")
+                .setPermissionNode("control.kick").setExecutor(new CommandKick(this)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("warn")
+                .setDescription("Issue a warning to a player").setUsage("/warn <player> [reason]")
+                .setPermissionNode("control.warn").setExecutor(new CommandWarn(this)).build());
+
         // Undo commands
-        getCommand("unban").setExecutor(new GenericPunishmentCommand(this, Punishments.BAN, true));
-        getCommand("unbanip").setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true));
-        getCommand("uncmute").setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE, true));
-        getCommand("unmute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE, true));
-        // Warning commands
-        getCommand("warn").setExecutor(new CommandWarn(this));
-        getCommand("warns").setExecutor(new CommandWarns(this));
-        // Adminchat
-        getCommand("a").setExecutor(new CommandA(this));
-        // Other commands
-        getCommand("o").setExecutor(new CommandOnline(this));
-        getCommand("ops").setExecutor(new CommandOps(this));
-        getCommand("plgrep").setExecutor(new CommandPlgrep(this));
-        getCommand("info").setExecutor(new CommandInfo(this));
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("unban").addAlias("unbanplayer")
+                .setDescription("Unban a player").setUsage("/unban <player>").setPermissionNode("control.unban")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.BAN, true)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("unbanip").addAlias("unipban")
+                .setDescription("Unban an IP by player or IP").setUsage("/ban <player|IP>")
+                .setPermissionNode("control.unbanip")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("uncmute")
+                .setDescription("Un-command-mute a player").setUsage("/uncmute <player>")
+                .setPermissionNode("control.uncmute")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE, true)).build());
+
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("unmute")
+                .setDescription("Unmute a player").setUsage("/unmute <player>").setPermissionNode("control.unmute")
+                .setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE, true)).build());
+
+        // Admin chat
+        getCommandManager().registerCommand(new SkirtsCommand.Builder().setName("a").addAlias("adminchat").addAlias("ac")
+                .setDescription("Enter admin chat, or send a message to the channel").setUsage("/a [message]")
+                .setPermissionNode("control.channels.use").setExecutor(new CommandA(this)).build());
     }
 
     public void onDisable() {
@@ -212,9 +273,12 @@ public class Control extends SkirtsPlugin {
         });
     }
 
+    /**
+     * Cleans up inactive punishments once every minute. Warnings do not ever get removed.
+     *
+     * TODO: Actually make an unwarn?
+     */
     private void scheduleCleanupTask() {
-        // Checks every second because fuck TPS I guess? It's not like there's gonna be millions of rows selected...
-        // I hope (. _ . )
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> activePunishments.getExpiredPunishments().forEach(p -> {
             getLogger().info("Removing inactive punishment: " + p.toString());
             activePunishments.removePunishment(p);
@@ -235,7 +299,7 @@ public class Control extends SkirtsPlugin {
                     break;
             }
             inactivePunishments.insertPunishment(p);
-        }), 0L, 20L);
+        }), 0L, 20L * 60L);
     }
 
     private void registerEventBlockers() {
