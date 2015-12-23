@@ -4,7 +4,7 @@ version: 0.2.0
 description: skirts' plugin for banning and whatnot
 authors: [skirts]
 website: https://curlpipesh.me/
-depend: [Essentials, SkirtsUsers, SkirtsUtil]
+depend: [SkirtsUsers, SkirtsUtil]
 
 permissions:
   control.*:
