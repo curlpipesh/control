@@ -5,6 +5,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.util.database.IDatabase;
+import me.curlpipesh.util.database.impl.SQLiteDatabase;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,13 +33,8 @@ public class PunishmentDB implements IPunishmentDB {
 
     public PunishmentDB(@NonNull Control control, @NonNull String dbName, @NonNull DBMode mode) {
         switch(mode) {
-            case MYSQL:
-                databaseBackend = new MySQLDB(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
-                        + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, target TEXT NOT NULL, "
-                        + "reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, end TEXT NOT NULL)");
-                break;
             case SQLITE:
-                databaseBackend = new SQLiteDB(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
+                databaseBackend = new SQLiteDatabase(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
                         + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, target TEXT NOT NULL, "
                         + "reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, end TEXT NOT NULL)");
                 break;
@@ -156,7 +153,7 @@ public class PunishmentDB implements IPunishmentDB {
         calendar.add(Calendar.MINUTE, lengthInMinutes);
         end = calendar.getTime();
 
-        String endFormatted = lengthInMinutes == Integer.MAX_VALUE ? "Forever" : databaseBackend.getPlugin().getFormat().format(end);
+        String endFormatted = lengthInMinutes == Integer.MAX_VALUE ? "Forever" : Control.getFormat().format(end);
 
         try {
             PreparedStatement s = databaseBackend.getConnection()
@@ -168,11 +165,11 @@ public class PunishmentDB implements IPunishmentDB {
             s.setString(4, target);
             s.setString(5, reason);
             s.setInt(6, lengthInMinutes);
-            s.setString(7, databaseBackend.getPlugin().getFormat().format(now));
+            s.setString(7, Control.getFormat().format(now));
             s.setString(8, endFormatted);
             databaseBackend.execute(s);
             return Optional.of(new Punishment(databaseBackend.getPlugin(), lastPunishmentId, type, issuer, target, reason, lengthInMinutes,
-                    databaseBackend.getPlugin().getFormat().format(now), endFormatted));
+                    Control.getFormat().format(now), endFormatted));
         } catch(SQLException e) {
             e.printStackTrace();
             return Optional.<Punishment>empty();
@@ -199,7 +196,7 @@ public class PunishmentDB implements IPunishmentDB {
                     continue;
                 }
                 try {
-                    if(databaseBackend.getPlugin().getFormat().parse(end).before(new Date())) {
+                    if(Control.getFormat().parse(end).before(new Date())) {
                         punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
                     }
                 } catch(ParseException e) {
@@ -261,6 +258,7 @@ public class PunishmentDB implements IPunishmentDB {
         return punishments;
     }
 
+    @SuppressWarnings("unused")
     public enum DBMode {
         SQLITE, MYSQL
     }

@@ -12,6 +12,7 @@ import me.curlpipesh.control.fixes.NetherTopFix;
 import me.curlpipesh.control.fixes.SignHackFix;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -22,7 +23,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author audrey
  * @since 8/23/15.
  */
-public class Control extends JavaPlugin {
+public class Control extends SkirtsPlugin {
     @Getter
     private final IPunishmentDB activePunishments;
 
@@ -57,7 +57,7 @@ public class Control extends JavaPlugin {
      * DO NOT EVER CHANGE THIS FOR ANY REASON *
      ******************************************/
     @Getter
-    private final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Getter
     private String chatPrefix;
@@ -105,6 +105,7 @@ public class Control extends JavaPlugin {
         fixes.stream().forEach(f -> f.fix(this));
         readyWelc();
 
+        // TODO: Convert to SkirtsCommand format
         // Utility commands
         getCommand("audit").setExecutor(new CommandAudit(this));
         getCommand("clearchat").setExecutor(new CommandClearChat(this));

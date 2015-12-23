@@ -2,6 +2,7 @@ package me.curlpipesh.control.db;
 
 import lombok.NonNull;
 import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.util.database.IDatabase;
 
 import java.util.List;
 import java.util.Optional;

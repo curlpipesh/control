@@ -19,10 +19,21 @@
             <artifactId>lombok</artifactId>
             <version>1.16.2</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.earth2me.essentials</groupId>
             <artifactId>essentials</artifactId>
             <version>2.x</version>
+        </dependency-->
+
+        <dependency>
+            <groupId>me.curlpipesh.util</groupId>
+            <artifactId>Util</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>me.curlpipesh.users</groupId>
+            <artifactId>Users</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 

@@ -1,10 +1,11 @@
 package me.curlpipesh.control.commands;
 
-import com.earth2me.essentials.User;
+import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishments;
 import me.curlpipesh.control.util.TimeUtil;
-import me.curlpipesh.control.Control;
+import me.curlpipesh.users.SkirtsUser;
+import me.curlpipesh.users.Users;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,8 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 /**
+ * This class is bad and I should feel bad.
+ *
  * @author audrey
  * @since 8/26/15.
  */
@@ -62,7 +65,7 @@ public class GenericPunishmentCommand extends CCommand {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(args.length >= 1) {
             String target = args[0];
-            User essUser;
+            Optional<SkirtsUser> skirtsUser;
             int time = Integer.MAX_VALUE;
             boolean t = false;
             if(args.length > 1) {
@@ -90,21 +93,25 @@ public class GenericPunishmentCommand extends CCommand {
                     reason = reason.trim();
                 }
             }
-            if((essUser = getEssentials().getOfflineUser(target)) != null) {
+            skirtsUser = Users.getInstance().getSkirtsUserMap().getUserByName(target);
+            if(skirtsUser.isPresent()) {
                 String finalTarget;
 
                 if(punishIP) {
-                    if(essUser.getBase() != null && essUser.getBase().getAddress() != null) {
-                        finalTarget = essUser.getBase().getAddress().getAddress().toString().replaceAll("/", "");
+                    /*if(essUser.get().getIp() != null) {
+                        finalTarget = essUser.get().getIp().toString().replaceAll("/", "");
+                        // ((User)essUser).getBase().getAddress().getAddress().toString().replaceAll("/", "");
                     } else {
                         finalTarget = essUser.getLastLoginAddress().replaceAll("/", "");
-                    }
+                    }*/
+                    finalTarget = skirtsUser.get().getIp().toString().replaceAll("/", "");
                 } else {
-                    finalTarget = essUser.getConfigUUID().toString();
+                    //finalTarget = essUser.getConfigUUID().toString();
+                    finalTarget = skirtsUser.get().getUuid().toString();
                 }
 
                 if(isUndo) {
-                    unpunish(finalTarget, commandSender, essUser);
+                    unpunish(finalTarget, commandSender, skirtsUser.get());
                     return true;
                 } else {
                     Optional<Punishment> p = getControl().getActivePunishments()
@@ -114,10 +121,10 @@ public class GenericPunishmentCommand extends CCommand {
                                     finalTarget, reason, time);
 
                     if(type.equals(Punishments.BAN)) {
-                        kickForBan(Bukkit.getPlayer(essUser.getConfigUUID()), formatBan(reason,
+                        kickForBan(Bukkit.getPlayer(skirtsUser.get().getUuid()), formatBan(reason,
                                         (t ? TimeUtil.english(args[1]) : "Forever"),
                                         p.isPresent() ? p.get().getEnd() : "Some point in the future"),
-                                () -> Bukkit.getOfflinePlayer(essUser.getConfigUUID()).isOnline());
+                                () -> Bukkit.getOfflinePlayer(skirtsUser.get().getUuid()).isOnline());
                     } else if(punishIP) {
                         for(Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
@@ -128,7 +135,7 @@ public class GenericPunishmentCommand extends CCommand {
                     }
 
                     handlePunishment(type, finalTarget);
-                    announcePunishment(commandSender.getName(), punishIP ? hideIP(finalTarget) : essUser.getName(), type, reason, t ? args[1] : "" + time);
+                    announcePunishment(commandSender.getName(), punishIP ? hideIP(finalTarget) : skirtsUser.get().getLastName(), type, reason, t ? args[1] : "" + time);
                 }
             } else if(IPAddressUtil.isIPv4LiteralAddress(target.replaceFirst("/", ""))) {
                 if(isUndo) {
@@ -159,7 +166,7 @@ public class GenericPunishmentCommand extends CCommand {
         }
     }
 
-    private void unpunish(String target, CommandSender commandSender, @Nullable User essUser) {
+    private void unpunish(String target, CommandSender commandSender, @Nullable SkirtsUser essUser) {
         List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
         if(activePunishments.isEmpty()) {
             getControl().sendMessage(commandSender, noUndoString);
@@ -170,7 +177,7 @@ public class GenericPunishmentCommand extends CCommand {
                 getControl().getInactivePunishments().insertPunishment(p);
                 handlePunishment(type, target);
                 getControl().sendMessage(commandSender,
-                        formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser != null ? essUser.getName() : target, p.getType()));
+                        formatUnpunish(punishIP ? hideIP(p.getTarget()) : essUser != null ? essUser.getLastName() : target, p.getType()));
             }, 0L);
         }
     }

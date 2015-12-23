@@ -1,14 +1,15 @@
 package me.curlpipesh.control.commands;
 
-import com.earth2me.essentials.User;
 import com.google.common.collect.Lists;
+import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.users.SkirtsUser;
+import me.curlpipesh.users.Users;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import me.curlpipesh.control.Control;
-import me.curlpipesh.control.punishment.Punishments;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,22 +36,22 @@ public class CommandWarns extends CCommand {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(args.length == 1) {
             String playerName = args[0];
-            User essUser;
-            if((essUser = getEssentials().getOfflineUser(playerName)) != null) {
+            Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(playerName);
+            if(skirtsUserOptional.isPresent()) {
                 List<Punishment> punishments = new ArrayList<>();
-                punishments.addAll(getControl().getActivePunishments().getPunishments(essUser.getConfigUUID().toString()));
+                punishments.addAll(getControl().getActivePunishments().getPunishments(skirtsUserOptional.get().getUuid().toString()));
                 punishments = Lists.reverse(punishments.stream().filter(p -> p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList()));
                 if(punishments.size() > 0) {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7's warnings:");
+                    commandSender.sendMessage("§a" + skirtsUserOptional.get().getLastName() + "§7's warnings:");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                     for(Punishment p : punishments) {
                         sendMessage(commandSender, p);
                     }
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has §c" + punishments.size()
+                    commandSender.sendMessage("§a" + skirtsUserOptional.get().getLastName() + "§7 has §c" + punishments.size()
                             + "§7 total warnings");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                 } else {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has no warnings!");
+                    commandSender.sendMessage("§a" + skirtsUserOptional.get().getLastName() + "§7 has no warnings!");
                 }
                 return true;
             } else {
@@ -63,11 +65,11 @@ public class CommandWarns extends CCommand {
 
     private void sendMessage(CommandSender commandSender, Punishment p) {
         String issuer = p.getIssuer().equalsIgnoreCase("console") ? "CONSOLE" :
-                getEssentials().getUser(p.getIssuer()) == null ?
+                Users.getInstance().getUserForUUID(p.getIssuer()).isPresent() ?
                         Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?
                                 Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :
-                                p.getIssuer() :
-                        getEssentials().getUser(p.getIssuer()).getName();
+                                Users.getInstance().getUserForUUID(p.getIssuer()).get().getLastName() :
+                        p.getIssuer();
         if(commandSender instanceof Player) {
             String m = String.format("§7#§a%s§7 - §a%s§7", p.getId(), issuer);
             TextComponent line = new TextComponent(m);

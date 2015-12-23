@@ -1,10 +1,13 @@
 package me.curlpipesh.control.commands;
 
-import com.earth2me.essentials.User;
 import me.curlpipesh.control.Control;
+import me.curlpipesh.users.SkirtsUser;
+import me.curlpipesh.users.Users;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+
+import java.util.Optional;
 
 /**
  * @author audrey
@@ -22,7 +25,7 @@ public class CommandKick extends CCommand {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(args.length >= 1) {
             String target = args[0];
-            User essUser;
+            Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(target);
             String reason = "§cKicked§7";
 
             if(args.length > 1) {
@@ -32,9 +35,9 @@ public class CommandKick extends CCommand {
                 }
                 reason = reason.trim();
             }
-            if((essUser = getEssentials().getOfflineUser(target)) != null) {
-                Bukkit.getPlayer(essUser.getConfigUUID()).kickPlayer(String.format("§4Kicked§r:\n\n§c%s§r", reason));
-                getControl().broadcastImportantMessage(String.format("§c%s§7 was kicked by §c%s§7:§r", essUser.getName(),
+            if(skirtsUserOptional.isPresent()) {
+                Bukkit.getPlayer(skirtsUserOptional.get().getUuid()).kickPlayer(String.format("§4Kicked§r:\n\n§c%s§r", reason));
+                getControl().broadcastImportantMessage(String.format("§c%s§7 was kicked by §c%s§7:§r", skirtsUserOptional.get().getLastName(),
                         commandSender.getName()), "§c" + reason + "§r");
             } else {
                 commandSender.sendMessage(invalidTargetString.replaceAll("<name>", args[0]));

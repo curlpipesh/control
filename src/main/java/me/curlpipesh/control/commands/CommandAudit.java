@@ -1,9 +1,10 @@
 package me.curlpipesh.control.commands;
 
-import com.earth2me.essentials.User;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.users.SkirtsUser;
+import me.curlpipesh.users.Users;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -16,6 +17,7 @@ import sun.net.util.IPAddressUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,14 +36,14 @@ public class CommandAudit extends CCommand {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
         if(args.length == 1) {
             String playerName = args[0];
-            User essUser;
-            if((essUser = getEssentials().getOfflineUser(playerName)) != null) {
-                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments().getPunishmentsBy(essUser.getConfigUUID().toString()));
-                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments().getPunishmentsBy(essUser.getConfigUUID().toString()));
+            Optional<SkirtsUser> skirtsUser = Users.getInstance().getSkirtsUserMap().getUserByName(playerName);
+            if(skirtsUser.isPresent()) {
+                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments().getPunishmentsBy(skirtsUser.get().getUuid().toString()));
+                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments().getPunishmentsBy(skirtsUser.get().getUuid().toString()));
                 active = active.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
                 inactive = inactive.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
                 if(!active.isEmpty() || !inactive.isEmpty()) {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7's stats:");
+                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7's stats:");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                     for(Punishment p : active) {
                         sendMessage(commandSender, p, true);
@@ -49,11 +51,11 @@ public class CommandAudit extends CCommand {
                     for(Punishment p : inactive) {
                         sendMessage(commandSender, p, false);
                     }
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has §c" + (active.size() + inactive.size())
+                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has §c" + (active.size() + inactive.size())
                             + "§7 total punishments");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                 } else {
-                    commandSender.sendMessage("§a" + essUser.getName() + "§7 has no issued punishments!");
+                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has no issued punishments!");
                 }
                 return true;
             } else {
@@ -74,10 +76,11 @@ public class CommandAudit extends CCommand {
         }
         m += String.format("%s§7 - %s: %s", p.getId(), p.getType(), p.getReason());
         String target = p.getTarget();
+
         if(IPAddressUtil.isIPv4LiteralAddress(p.getTarget())) {
             target += " (IP)";
-        } else if(getEssentials().getUser(p.getTarget()) != null) {
-            target = getEssentials().getUser(p.getTarget()).getName();
+        } else if(Users.getInstance().getUserForUUID(p.getTarget()).isPresent()) {
+            target = Users.getInstance().getUserForUUID(p.getTarget()).get().getLastName();
         } else if(Bukkit.getPlayer(UUID.fromString(p.getTarget())) != null) {
             target = Bukkit.getPlayer(UUID.fromString(p.getTarget())).getName();
         }

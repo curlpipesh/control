@@ -1,10 +1,10 @@
-name: Control
+name: SkirtsControl
 main: me.curlpipesh.control.Control
 version: 0.2.0
 description: skirts' plugin for banning and whatnot
 authors: [skirts]
 website: https://curlpipesh.me/
-depend: [Essentials]
+depend: [Essentials, SkirtsUsers, SkirtsUtil]
 
 commands:
   a:
