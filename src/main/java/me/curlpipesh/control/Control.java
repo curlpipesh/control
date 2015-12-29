@@ -138,7 +138,7 @@ public class Control extends SkirtsPlugin {
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("plgrep").addAlias("plugingrep")
                 .setDescription("Grep for a string in the plugin list. Not regex").setUsage("/plgrep <string>")
-                .setPermissionNode("control.plgrep").build());
+                .setPermissionNode("control.plgrep").setExecutor(new CommandPlgrep(this)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("warns")
                 .setDescription("Show all warnings for a player").setUsage("/warns <player>")
