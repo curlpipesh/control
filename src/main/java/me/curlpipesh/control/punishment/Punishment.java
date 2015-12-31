@@ -3,11 +3,7 @@ package me.curlpipesh.control.punishment;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
-import me.curlpipesh.control.Control;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
-
-import java.text.ParseException;
-import java.util.Date;
 
 /**
  * @author audrey
@@ -16,19 +12,19 @@ import java.util.Date;
 @Data
 @ToString
 public class Punishment {
-    private SkirtsPlugin control;
-    private int id;
-    private String type;
-    private String issuer;
-    private String target;
-    private String reason;
-    private int length;
-    private String start;
-    private String end;
+    private final SkirtsPlugin control;
+    private final int id;
+    private final String type;
+    private final String issuer;
+    private final String target;
+    private final String reason;
+    private final int length;
+    private final long start;
+    private final long end;
 
-    public Punishment(@NonNull SkirtsPlugin control, @NonNull int id, @NonNull String type, @NonNull String issuer,
-                      @NonNull String target, @NonNull String reason, @NonNull int length, @NonNull String start,
-                      @NonNull String end) {
+    public Punishment(@NonNull final SkirtsPlugin control, @NonNull final int id, @NonNull final String type, @NonNull final String issuer,
+                      @NonNull final String target, @NonNull final String reason, @NonNull final int length, @NonNull final long start,
+                      @NonNull final long end) {
         this.control = control;
         this.id = id;
         this.type = type;
@@ -41,11 +37,7 @@ public class Punishment {
     }
 
     public boolean over() {
-        try {
-            return !end.equalsIgnoreCase("forever") && Control.getFormat().parse(end).before(new Date());
-        } catch(ParseException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return end != Integer.MAX_VALUE && end <= System.currentTimeMillis();
+        //!end.equalsIgnoreCase("forever") && Control.getFormat().parse(end).before(new Date());
     }
 }

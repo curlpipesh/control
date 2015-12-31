@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import sun.net.util.IPAddressUtil;
 
 import javax.annotation.Nullable;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -23,11 +24,11 @@ import java.util.function.BooleanSupplier;
  * @author audrey
  * @since 8/26/15.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "Duplicates"})
 public class GenericPunishmentCommand extends CCommand {
-    private String type;
-    private boolean punishIP;
-    private boolean isUndo;
+    private final String type;
+    private final boolean punishIP;
+    private final boolean isUndo;
     private final String banFormatString;
     private final String noUndoString;
     private final String unpunishSuccessString;
@@ -39,7 +40,7 @@ public class GenericPunishmentCommand extends CCommand {
      * @param control Plugin instance
      * @param type    Punishment type
      */
-    public GenericPunishmentCommand(Control control, String type) {
+    public GenericPunishmentCommand(final Control control, final String type) {
         this(control, type, false);
     }
 
@@ -50,7 +51,7 @@ public class GenericPunishmentCommand extends CCommand {
      * @param type    Punishment type
      * @param isUndo  Whether or not the command undoes a punishment
      */
-    public GenericPunishmentCommand(Control control, String type, boolean isUndo) {
+    public GenericPunishmentCommand(final Control control, final String type, final boolean isUndo) {
         super(control);
         this.type = type;
         this.isUndo = isUndo;
@@ -62,10 +63,10 @@ public class GenericPunishmentCommand extends CCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] args) {
         if(args.length >= 1) {
-            String target = args[0];
-            Optional<SkirtsUser> skirtsUser;
+            final String target = args[0];
+            final Optional<SkirtsUser> skirtsUser;
             int time = Integer.MAX_VALUE;
             boolean t = false;
             if(args.length > 1) {
@@ -80,7 +81,7 @@ public class GenericPunishmentCommand extends CCommand {
                 if(args.length > 2) {
                     reason = "";
                     for(int i = 2; i < args.length; i++) {
-                        reason += args[i] + " ";
+                        reason += args[i] + ' ';
                     }
                     reason = reason.trim();
                 }
@@ -88,14 +89,14 @@ public class GenericPunishmentCommand extends CCommand {
                 if(args.length > 1) {
                     reason = "";
                     for(int i = 1; i < args.length; i++) {
-                        reason += args[i] + " ";
+                        reason += args[i] + ' ';
                     }
                     reason = reason.trim();
                 }
             }
             skirtsUser = Users.getInstance().getSkirtsUserMap().getUserByName(target);
             if(skirtsUser.isPresent()) {
-                String finalTarget;
+                final String finalTarget;
 
                 if(punishIP) {
                     /*if(essUser.get().getIp() != null) {
@@ -114,7 +115,7 @@ public class GenericPunishmentCommand extends CCommand {
                     unpunish(finalTarget, commandSender, skirtsUser.get());
                     return true;
                 } else {
-                    Optional<Punishment> p = getControl().getActivePunishments()
+                    final Optional<Punishment> p = getControl().getActivePunishments()
                             .insertPunishment(type,
                                     commandSender instanceof Player
                                             ? ((Player) commandSender).getUniqueId().toString() : "Console",
@@ -122,14 +123,14 @@ public class GenericPunishmentCommand extends CCommand {
 
                     if(type.equals(Punishments.BAN)) {
                         kickForBan(Bukkit.getPlayer(skirtsUser.get().getUuid()), formatBan(reason,
-                                        (t ? TimeUtil.english(args[1]) : "Forever"),
-                                        p.isPresent() ? p.get().getEnd() : "Some point in the future"),
+                                t ? TimeUtil.english(args[1]) : "Forever",
+                                p.isPresent() ? new Date(p.get().getEnd()).toString() : "Some point in the future"),
                                 () -> Bukkit.getOfflinePlayer(skirtsUser.get().getUuid()).isOnline());
                     } else if(punishIP) {
-                        for(Player player : Bukkit.getOnlinePlayers()) {
+                        for(final Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
-                                            (t ? TimeUtil.english(args[1]) : "Forever"),
-                                            p.isPresent() ? p.get().getEnd() : "Some point in the future"),
+                                    t ? TimeUtil.english(args[1]) : "Forever",
+                                    p.isPresent() ? new Date(p.get().getEnd()).toString() : "Some point in the future"),
                                     () -> player.getAddress().getAddress().toString().replaceAll("/", "").equals(finalTarget));
                         }
                     }
@@ -142,15 +143,15 @@ public class GenericPunishmentCommand extends CCommand {
                     unpunish(target, commandSender, null);
                     return true;
                 } else {
-                    Optional<Punishment> p = getControl().getActivePunishments()
+                    final Optional<Punishment> p = getControl().getActivePunishments()
                             .insertPunishment(type,
                                     commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                     target, reason, time);
                     if(type.equals(Punishments.BAN) || type.equals(Punishments.IP_BAN)) {
-                        for(Player player : Bukkit.getOnlinePlayers()) {
+                        for(final Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
-                                            (t ? TimeUtil.english(args[1]) : "Forever"),
-                                            p.isPresent() ? p.get().getEnd() : "Some point in the future"),
+                                    t ? TimeUtil.english(args[1]) : "Forever",
+                                    p.isPresent() ? new Date(p.get().getEnd()).toString() : "Some point in the future"),
                                     () -> player.getAddress().getAddress().toString().replaceAll("/", "").equals(target));
                         }
                     }
@@ -166,13 +167,13 @@ public class GenericPunishmentCommand extends CCommand {
         }
     }
 
-    private void unpunish(String target, CommandSender commandSender, @Nullable SkirtsUser essUser) {
-        List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
+    private void unpunish(final String target, final CommandSender commandSender, @Nullable final SkirtsUser essUser) {
+        final List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
         if(activePunishments.isEmpty()) {
             getControl().sendMessage(commandSender, noUndoString);
         } else {
             Bukkit.getScheduler().scheduleSyncDelayedTask(getControl(), () -> {
-                Punishment p = activePunishments.get(activePunishments.size() - 1);
+                final Punishment p = activePunishments.get(activePunishments.size() - 1);
                 getControl().getActivePunishments().removePunishment(p);
                 getControl().getInactivePunishments().insertPunishment(p);
                 handlePunishment(type, target);
@@ -182,26 +183,26 @@ public class GenericPunishmentCommand extends CCommand {
         }
     }
 
-    private String hideIP(String ip) {
+    private String hideIP(final String ip) {
         return ip.trim().replaceFirst("\\.[0-9]{1,3}\\.[0-9]{1,3}$", ".XXX.XXX");
     }
 
-    private String formatBan(String reason, String time, String end) {
+    private String formatBan(final String reason, final String time, final String end) {
         return banFormatString.replaceAll("<reason>", reason).replaceAll("<time>", time).replaceAll("<end>", end);
     }
 
-    private String formatUnpunish(String name, String type) {
+    private String formatUnpunish(final String name, final String type) {
         return unpunishSuccessString.replaceAll("<name>", name)
                 .replaceAll("<punishment>", Punishments.english(type));
     }
 
-    private void kickForBan(Player player, String message, BooleanSupplier condition) {
+    private void kickForBan(final Player player, final String message, final BooleanSupplier condition) {
         if(condition.getAsBoolean()) {
             player.kickPlayer(message);
         }
     }
 
-    private void handlePunishment(String type, String target) {
+    private void handlePunishment(final String type, final String target) {
         switch(type) {
             case Punishments.COMMAND_MUTE:
                 if(isUndo) {

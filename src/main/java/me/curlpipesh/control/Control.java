@@ -28,11 +28,7 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -57,13 +53,6 @@ public class Control extends SkirtsPlugin {
 
     @Getter
     private final Collection<String> ipBans = new CopyOnWriteArrayList<>();
-
-    /****************************************************
-     * DO NOT EVER CHANGE THIS FOR ANY REASON           *
-     * TODO: Should probably not store dates as TEXT... *
-     ****************************************************/
-    @Getter
-    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Getter
     private String chatPrefix;
@@ -111,7 +100,6 @@ public class Control extends SkirtsPlugin {
         fixes.stream().forEach(f -> f.fix(this));
         readyWelc();
 
-        // TODO: Convert to SkirtsCommand format
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("audit")
                 .setDescription("Show all punishments issued by a player").setUsage("/audit <player>")
                 .setPermissionNode("control.audit").setExecutor(new CommandAudit(this)).build());
@@ -280,7 +268,7 @@ public class Control extends SkirtsPlugin {
 
     /**
      * Cleans up inactive punishments once every minute. Warnings do not ever get removed.
-     *
+     * <p>
      * TODO: Actually make an unwarn?
      */
     private void scheduleCleanupTask() {
@@ -308,7 +296,9 @@ public class Control extends SkirtsPlugin {
     }
 
     private void registerEventBlockers() {
-        Bukkit.getPluginManager().registerEvents(new Adblocker(this), this);
+        if(getConfig().getBoolean("adblock-enabled")) {
+            Bukkit.getPluginManager().registerEvents(new Adblocker(this), this);
+        }
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -327,11 +317,13 @@ public class Control extends SkirtsPlugin {
             public void onAsyncPlayerPreLogin(final AsyncPlayerPreLoginEvent e) {
                 if(bans.contains(e.getUniqueId().toString())) {
                     final List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
-                    e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() + "\n\nExpires: " + p.get(p.size() - 1).getEnd());
+                    e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
+                            "\n\nExpires: " + new Date(p.get(p.size() - 1).getEnd()));
                 }
                 if(ipBans.contains(e.getAddress().toString().replaceAll("/", ""))) {
                     final List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString().replaceAll("/", ""));
-                    e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() + "\n\nExpires: " + p.get(p.size() - 1).getEnd());
+                    e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
+                            "\n\nExpires: " + new Date(p.get(p.size() - 1).getEnd()));
                 }
             }
         }, this);

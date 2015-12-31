@@ -24,6 +24,8 @@ punishment-length: "5m"
 
 # Part of server's description goes here
 home: "A Minecraft Server"
+# Defaults to false because it can be a touch overbearing
+adblock-enabled: false
 # TODO: Unused?
 ad-check-message: "§7Are you advertising? Give us a minute to check..."
 not-ad-message: "§7You're not advertising. Sorry about that."

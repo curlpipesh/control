@@ -11,12 +11,10 @@ import me.curlpipesh.util.database.impl.SQLiteDatabase;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author audrey
@@ -26,12 +24,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class PunishmentDB implements IPunishmentDB {
     @Getter
     @Setter
-    private int lastPunishmentId = 0;
+    private int lastPunishmentId;
 
     @Getter
-    private IDatabase databaseBackend;
+    private final IDatabase databaseBackend;
 
-    public PunishmentDB(@NonNull Control control, @NonNull String dbName, @NonNull DBMode mode) {
+    public PunishmentDB(@NonNull final Control control, @NonNull final String dbName, @NonNull final DBMode mode) {
         switch(mode) {
             case SQLITE:
                 databaseBackend = new SQLiteDatabase(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
@@ -44,13 +42,13 @@ public class PunishmentDB implements IPunishmentDB {
         // TODO: Make id AUTOINCREMENT(?) at some point
         databaseBackend.addInitTask(() -> {
             try {
-                PreparedStatement s = databaseBackend.getConnection()
+                final PreparedStatement s = databaseBackend.getConnection()
                         .prepareStatement(String.format("SELECT * FROM %s WHERE id = (SELECT MAX(id) FROM %s)", databaseBackend.getDatabaseName(), databaseBackend.getDatabaseName()));
-                ResultSet r = s.executeQuery();
+                final ResultSet r = s.executeQuery();
                 r.next();
-                PunishmentDB.this.lastPunishmentId = r.getInt("id") + 1;
+                lastPunishmentId = r.getInt("id") + 1;
                 r.close();
-            } catch(Exception e) {
+            } catch(final Exception e) {
                 e.printStackTrace();
                 // Pointless spacing, ik, but.
                 System.out.println("#############################################################");
@@ -58,119 +56,118 @@ public class PunishmentDB implements IPunishmentDB {
                 System.out.println("Could not load last ID.                                      ");
                 System.out.println("Expect things to be broken.                                  ");
                 System.out.println("#############################################################");
-                PunishmentDB.this.lastPunishmentId = 0;
+                lastPunishmentId = 0;
             }
             System.out.println(String.format("%s: %s", databaseBackend.getDatabaseName(), lastPunishmentId));
         });
     }
 
     @SuppressWarnings("unused")
-    public PunishmentDB(@NonNull Control control, @NonNull String dbName) {
+    public PunishmentDB(@NonNull final Control control, @NonNull final String dbName) {
         this(control, dbName, DBMode.SQLITE);
     }
 
     @Override
-    public List<Punishment> getPunishments(@NonNull String t) {
-        List<Punishment> punishments = new CopyOnWriteArrayList<>();
+    public List<Punishment> getPunishments(@NonNull final String t) {
+        final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE target = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE target = ?", databaseBackend.getDatabaseName()));
             s.setString(1, t);
             s.execute();
-            ResultSet resultSet = s.getResultSet();
+            final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String type = resultSet.getString("type");
-                String issuer = resultSet.getString("issuer");
-                String target = resultSet.getString("target");
-                String reason = resultSet.getString("reason");
-                int lengthInMinutes = resultSet.getInt("length");
-                String start = resultSet.getString("start");
-                String end = resultSet.getString("end");
+                final int id = resultSet.getInt("id");
+                final String type = resultSet.getString("type");
+                final String issuer = resultSet.getString("issuer");
+                final String target = resultSet.getString("target");
+                final String reason = resultSet.getString("reason");
+                final int lengthInMinutes = resultSet.getInt("length");
+                final long start = resultSet.getLong("start");
+                final long end = resultSet.getLong("end");
                 punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
             }
             s.close();
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
         }
         return punishments;
     }
 
     @Override
-    public List<Punishment> getPunishmentsBy(@NonNull String i) {
-        List<Punishment> punishments = new CopyOnWriteArrayList<>();
+    public List<Punishment> getPunishmentsBy(@NonNull final String i) {
+        final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE issuer = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE issuer = ?", databaseBackend.getDatabaseName()));
             s.setString(1, i);
             s.execute();
-            ResultSet resultSet = s.getResultSet();
+            final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String type = resultSet.getString("type");
-                String issuer = resultSet.getString("issuer");
-                String target = resultSet.getString("target");
-                String reason = resultSet.getString("reason");
-                int lengthInMinutes = resultSet.getInt("length");
-                String start = resultSet.getString("start");
-                String end = resultSet.getString("end");
+                final int id = resultSet.getInt("id");
+                final String type = resultSet.getString("type");
+                final String issuer = resultSet.getString("issuer");
+                final String target = resultSet.getString("target");
+                final String reason = resultSet.getString("reason");
+                final int lengthInMinutes = resultSet.getInt("length");
+                final long start = resultSet.getLong("start");
+                final long end = resultSet.getLong("end");
                 punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
             }
             s.close();
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
         }
         return punishments;
     }
 
     @Override
-    public Optional<Punishment> insertPunishment(@NonNull Punishment p) {
+    public Optional<Punishment> insertPunishment(@NonNull final Punishment p) {
         lastPunishmentId = p.getId() - 1;
         try {
-            PreparedStatement s = databaseBackend.getConnection()
+            final PreparedStatement s = databaseBackend.getConnection()
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", databaseBackend.getDatabaseName()));
-            s.setInt(1, ++lastPunishmentId);
+            ++lastPunishmentId;
+            s.setInt(1, lastPunishmentId);
             s.setString(2, p.getType());
             s.setString(3, p.getIssuer());
             s.setString(4, p.getTarget());
             s.setString(5, p.getReason());
             s.setInt(6, p.getLength());
-            s.setString(7, p.getStart());
-            s.setString(8, p.getEnd());
+            s.setLong(7, p.getStart());
+            s.setLong(8, p.getEnd());
             databaseBackend.execute(s);
             return Optional.of(p);
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
             return Optional.<Punishment>empty();
         }
     }
 
     @Override
-    public Optional<Punishment> insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes) {
-        Date now = new Date();
-        Date end = (Date) now.clone();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(end);
-        calendar.add(Calendar.MINUTE, lengthInMinutes);
-        end = calendar.getTime();
+    public Optional<Punishment> insertPunishment(@NonNull final String type, @NonNull final String issuer, @NonNull final String target, @NonNull final String reason, @NonNull final int lengthInMinutes) {
+        final long now = System.currentTimeMillis();
 
-        String endFormatted = lengthInMinutes == Integer.MAX_VALUE ? "Forever" : Control.getFormat().format(end);
+        final long then = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(lengthInMinutes);
+
+        final long endFormatted = lengthInMinutes == Integer.MAX_VALUE ? Integer.MAX_VALUE : then;
 
         try {
-            PreparedStatement s = databaseBackend.getConnection()
+            final PreparedStatement s = databaseBackend.getConnection()
                     .prepareStatement(String.format("INSERT INTO %s (id, type, issuer, target, reason, length, start, end) " +
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", databaseBackend.getDatabaseName()));
-            s.setInt(1, ++lastPunishmentId);
+            ++lastPunishmentId;
+            s.setInt(1, lastPunishmentId);
             s.setString(2, type);
             s.setString(3, issuer);
             s.setString(4, target);
             s.setString(5, reason);
             s.setInt(6, lengthInMinutes);
-            s.setString(7, Control.getFormat().format(now));
-            s.setString(8, endFormatted);
+            s.setLong(7, now);
+            s.setLong(8, endFormatted);
             databaseBackend.execute(s);
             return Optional.of(new Punishment(databaseBackend.getPlugin(), lastPunishmentId, type, issuer, target, reason, lengthInMinutes,
-                    Control.getFormat().format(now), endFormatted));
-        } catch(SQLException e) {
+                    now, endFormatted));
+        } catch(final SQLException e) {
             e.printStackTrace();
             return Optional.<Punishment>empty();
         }
@@ -178,54 +175,50 @@ public class PunishmentDB implements IPunishmentDB {
 
     @Override
     public List<Punishment> getExpiredPunishments() {
-        List<Punishment> punishments = new CopyOnWriteArrayList<>();
+        final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
             s.execute();
-            ResultSet resultSet = s.getResultSet();
+            final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String type = resultSet.getString("type");
-                String issuer = resultSet.getString("issuer");
-                String target = resultSet.getString("target");
-                String reason = resultSet.getString("reason");
-                int lengthInMinutes = resultSet.getInt("length");
-                String start = resultSet.getString("start");
-                String end = resultSet.getString("end");
-                if(end.equalsIgnoreCase("forever")) {
+                final int id = resultSet.getInt("id");
+                final String type = resultSet.getString("type");
+                final String issuer = resultSet.getString("issuer");
+                final String target = resultSet.getString("target");
+                final String reason = resultSet.getString("reason");
+                final int lengthInMinutes = resultSet.getInt("length");
+                final long start = resultSet.getLong("start");
+                final long end = resultSet.getLong("end");
+                if(end == Integer.MAX_VALUE) {
                     continue;
                 }
-                try {
-                    if(Control.getFormat().parse(end).before(new Date())) {
-                        punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
-                    }
-                } catch(ParseException e) {
-                    e.printStackTrace();
+                if(end <= System.currentTimeMillis()) {
+                    punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
                 }
             }
             s.close();
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
         }
         return punishments;
     }
 
     @Override
-    public boolean removePunishment(@NonNull Punishment p) {
+    public boolean removePunishment(@NonNull final Punishment p) {
         try {
-            PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("DELETE FROM %s WHERE id = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("DELETE FROM %s WHERE id = ?", databaseBackend.getDatabaseName()));
             s.setInt(1, p.getId());
             return databaseBackend.execute(s);
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
 
     @Override
-    public boolean removePunishments(@NonNull Punishment... ps) {
+    public boolean removePunishments(@NonNull final Punishment... ps) {
         int failed = 0;
-        for(@NonNull Punishment p : ps) {
+        for(@NonNull final Punishment p : ps) {
             if(!removePunishment(p)) {
                 ++failed;
             }
@@ -235,24 +228,24 @@ public class PunishmentDB implements IPunishmentDB {
 
     @Override
     public List<Punishment> getAllPunishments() {
-        List<Punishment> punishments = new CopyOnWriteArrayList<>();
+        final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
             s.execute();
-            ResultSet resultSet = s.getResultSet();
+            final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String type = resultSet.getString("type");
-                String issuer = resultSet.getString("issuer");
-                String target = resultSet.getString("target");
-                String reason = resultSet.getString("reason");
-                int lengthInMinutes = resultSet.getInt("length");
-                String start = resultSet.getString("start");
-                String end = resultSet.getString("end");
+                final int id = resultSet.getInt("id");
+                final String type = resultSet.getString("type");
+                final String issuer = resultSet.getString("issuer");
+                final String target = resultSet.getString("target");
+                final String reason = resultSet.getString("reason");
+                final int lengthInMinutes = resultSet.getInt("length");
+                final long start = resultSet.getLong("start");
+                final long end = resultSet.getLong("end");
                 punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
             }
             s.close();
-        } catch(SQLException e) {
+        } catch(final SQLException e) {
             e.printStackTrace();
         }
         return punishments;
