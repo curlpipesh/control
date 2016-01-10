@@ -2,6 +2,7 @@ package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.adminchat.UserMap;
+import me.curlpipesh.control.adminchat.UserMap.Channel;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,24 +12,27 @@ import org.bukkit.entity.Player;
  * @since 10/4/15.
  */
 public class CommandA extends CCommand {
-    public CommandA(Control control) {
+    public CommandA(final Control control) {
         super(control);
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] args) {
         if(commandSender instanceof Player) {
             if(commandSender.hasPermission("control.channels.use")) {
-                Player player = (Player) commandSender;
+                //noinspection TypeMayBeWeakened
+                final Player player = (Player) commandSender;
                 if(args.length > 0) {
                     String message = "";
-                    for(String e : args) {
-                        message += e + " ";
+                    for(final String e : args) {
+                        message += e + ' ';
                     }
                     message = message.trim();
-                    UserMap.sendMessageToChannel(UserMap.Channel.ADMIN_CHAT, ((Player)commandSender).getDisplayName(), message);
+                    UserMap.sendMessageToChannel(Channel.ADMIN_CHAT,
+                            ((Player)commandSender).getDisplayName(), message);
                 } else {
-                    boolean flag = UserMap.getAdminChatUsers().stream().filter(u -> u.getUuid().equals(player.getUniqueId()))
+                    final boolean flag = UserMap.getAdminChatUsers().stream()
+                            .filter(u -> u.getUuid().equals(player.getUniqueId()))
                             .findFirst().get().isTalkingInChannel();
                     UserMap.getAdminChatUsers().stream().filter(u -> u.getUuid().equals(player.getUniqueId()))
                             .forEach(p -> p.setTalkingInChannel(!p.isTalkingInChannel()));

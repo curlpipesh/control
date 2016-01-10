@@ -20,9 +20,9 @@ public class CommandInfo extends CCommand {
 
     @Override
     public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] strings) {
-        final String freeMemory = "§7Free Memory: §e" + Runtime.getRuntime().freeMemory() / 1048576L;
-        final String maxMemory = "§7Max Memory: §e" + Runtime.getRuntime().maxMemory() / 1048576L;
-        final String totalMemory = "§7Total Memory: §e" + Runtime.getRuntime().totalMemory() / 1048576L;
+        final String freeMemory = "§7Free Memory: §e" + Runtime.getRuntime().freeMemory() / 1048576L + "MB";
+        final String maxMemory = "§7Max Memory: §e" + Runtime.getRuntime().maxMemory() / 1048576L + "MB";
+        final String totalMemory = "§7Total Memory: §e" + Runtime.getRuntime().totalMemory() / 1048576L + "MB";
 
         final List<String> flagStringList = ManagementFactory.getRuntimeMXBean().getInputArguments();
         final StringBuilder sb = new StringBuilder();

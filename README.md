@@ -13,12 +13,7 @@ A magic bans-and-stuff plugin for Bukkit/Spigot.
 
 ## Building
 
-Building this plugin relies on having spigot-1.8.7+ and Essentials-2.x installed in the local Maven repository. If you don't already have this set up, installing them might look like:
-
-```
-mvn install:install-file -Dfile=./spigot-1.8.7.jar -DgroupId=org.spigotmc.spigot -DartifactId=spigot -Dversion=1.8.7 -Dpackaging=JAR
-mvn install:install-file -Dfile=./Essentials-2.x.jar -DgroupId=com.earth2me.essentials -DartifactId=essentials -Dversion=2.x -Dpackaging=JAR
-```
+Building this plugin relies on having spigot-1.8.8 installed in the local Maven repository.
 
 Afterwards, just run `mvn clean package`.
 

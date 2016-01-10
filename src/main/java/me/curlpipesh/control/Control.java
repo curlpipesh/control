@@ -78,7 +78,7 @@ public class Control extends SkirtsPlugin {
         if(sqlmode.equalsIgnoreCase("sqlite")) {
             activePunishments = new PunishmentDB(this, "active_punishments", DBMode.SQLITE);
             inactivePunishments = new PunishmentDB(this, "inactive_punishments", DBMode.SQLITE);
-        }/* else if(sqlmode.equalsIgnoreCase("mysql")) {
+        }/* else if(sqlmode.equalsIgnoreCase("mysql")) { // TODO: Implement MySQL mode
             activePunishments = new PunishmentDB(this, "active_punishments", PunishmentDB.DBMode.MYSQL);
             inactivePunishments = new PunishmentDB(this, "inactive_punishments", PunishmentDB.DBMode.MYSQL);
         } */ else {
@@ -95,6 +95,7 @@ public class Control extends SkirtsPlugin {
         }
         getLogger().info("Saving default config...");
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);
         chatPrefix = getConfig().getString("chat-prefix");
         chatHeader = getConfig().getString("chat-header");
         cmuteCommandsToBlock = getConfig().getStringList("cmute-blocked-cmds");
@@ -208,11 +209,11 @@ public class Control extends SkirtsPlugin {
     }
 
     public void sendImportantMessage(final CommandSender commandSender, final String... message) {
-        commandSender.sendMessage(String.format("%s%s%s", chatHeader, chatPrefix, chatHeader));
+        commandSender.sendMessage(chatHeader);
         for(final String e : message) {
             commandSender.sendMessage(e);
         }
-        commandSender.sendMessage(String.format("%s%s%s", chatHeader, chatPrefix, chatHeader));
+        commandSender.sendMessage(chatHeader);
     }
 
     public void broadcastMessage(final String... message) {

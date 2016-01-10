@@ -9,8 +9,8 @@ unpunish-success: "§a<name>§7 successfully un<punishment>!"
 invalid-target: "§c<name>§7 is an invalid target!"
 
 # Chat appearance
-chat-prefix: "§8§l[§5§lControl§8§l]§r"
-chat-header: "§8§l§m------------§r"
+chat-prefix: "§8§l[§b§lControl§8§l]§r"
+chat-header: "§8§l§m------------§8§l[§b§lControl§8§l]§8§l§m------------§r"
 
 # For automatic advertisement punishment
 # Valid values: "mute", "ban", "banip"
@@ -22,16 +22,16 @@ punishment-type: "mute"
 # etc.
 punishment-length: "5m"
 
-# Part of server's description goes here
+# Part of server's description goes here. Used for not recognizing us as an ad
 home: "A Minecraft Server"
 # Defaults to false because it can be a touch overbearing
-adblock-enabled: false
+adblock-enabled: true
 # TODO: Unused?
 ad-check-message: "§7Are you advertising? Give us a minute to check..."
 not-ad-message: "§7You're not advertising. Sorry about that."
 
 # Valid values: "sqlite"
-# This is because SQLite is serverless so less painful to develop for...
+# MySQL will be added soon
 # NEVER CHANGE THIS ONCE IT HAS BEEN SET
 sql-mode: "sqlite"
 
