@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.util.database.IDatabase;
 import me.curlpipesh.util.database.impl.SQLiteDatabase;
 
@@ -33,8 +34,9 @@ public class PunishmentDB implements IPunishmentDB {
         switch(mode) {
             case SQLITE:
                 databaseBackend = new SQLiteDatabase(control, dbName, "CREATE TABLE IF NOT EXISTS " + dbName
-                        + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, target TEXT NOT NULL, "
-                        + "reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, end TEXT NOT NULL)");
+                        + "(id INT PRIMARY KEY NOT NULL UNIQUE, type TEXT NOT NULL, issuer TEXT NOT NULL, " +
+                        "target TEXT NOT NULL, reason TEXT NOT NULL, length INT NOT NULL, start TEXT NOT NULL, " +
+                        "end TEXT NOT NULL)");
                 break;
             default:
                 throw new IllegalArgumentException("Unknown DB mode!");
@@ -43,7 +45,8 @@ public class PunishmentDB implements IPunishmentDB {
         databaseBackend.addInitTask(() -> {
             try {
                 final PreparedStatement s = databaseBackend.getConnection()
-                        .prepareStatement(String.format("SELECT * FROM %s WHERE id = (SELECT MAX(id) FROM %s)", databaseBackend.getDatabaseName(), databaseBackend.getDatabaseName()));
+                        .prepareStatement(String.format("SELECT * FROM %s WHERE id = (SELECT MAX(id) FROM %s)",
+                                databaseBackend.getDatabaseName(), databaseBackend.getDatabaseName()));
                 final ResultSet r = s.executeQuery();
                 r.next();
                 lastPunishmentId = r.getInt("id") + 1;
@@ -71,7 +74,8 @@ public class PunishmentDB implements IPunishmentDB {
     public List<Punishment> getPunishments(@NonNull final String t) {
         final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE target = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection()
+                    .prepareStatement(String.format("SELECT * FROM %s WHERE target = ?", databaseBackend.getDatabaseName()));
             s.setString(1, t);
             s.execute();
             final ResultSet resultSet = s.getResultSet();
@@ -84,7 +88,8 @@ public class PunishmentDB implements IPunishmentDB {
                 final int lengthInMinutes = resultSet.getInt("length");
                 final long start = resultSet.getLong("start");
                 final long end = resultSet.getLong("end");
-                punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
+                punishments.add(new Punishment(databaseBackend.getPlugin(), id, PunishmentType.get(type), issuer,
+                        target, reason, lengthInMinutes, start, end));
             }
             s.close();
         } catch(final SQLException e) {
@@ -97,7 +102,8 @@ public class PunishmentDB implements IPunishmentDB {
     public List<Punishment> getPunishmentsBy(@NonNull final String i) {
         final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s WHERE issuer = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection()
+                    .prepareStatement(String.format("SELECT * FROM %s WHERE issuer = ?", databaseBackend.getDatabaseName()));
             s.setString(1, i);
             s.execute();
             final ResultSet resultSet = s.getResultSet();
@@ -110,7 +116,8 @@ public class PunishmentDB implements IPunishmentDB {
                 final int lengthInMinutes = resultSet.getInt("length");
                 final long start = resultSet.getLong("start");
                 final long end = resultSet.getLong("end");
-                punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
+                punishments.add(new Punishment(databaseBackend.getPlugin(), id, PunishmentType.get(type), issuer,
+                        target, reason, lengthInMinutes, start, end));
             }
             s.close();
         } catch(final SQLException e) {
@@ -128,7 +135,7 @@ public class PunishmentDB implements IPunishmentDB {
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", databaseBackend.getDatabaseName()));
             ++lastPunishmentId;
             s.setInt(1, lastPunishmentId);
-            s.setString(2, p.getType());
+            s.setString(2, p.getType().getType());
             s.setString(3, p.getIssuer());
             s.setString(4, p.getTarget());
             s.setString(5, p.getReason());
@@ -144,7 +151,8 @@ public class PunishmentDB implements IPunishmentDB {
     }
 
     @Override
-    public Optional<Punishment> insertPunishment(@NonNull final String type, @NonNull final String issuer, @NonNull final String target, @NonNull final String reason, @NonNull final int lengthInMinutes) {
+    public Optional<Punishment> insertPunishment(@NonNull final PunishmentType type, @NonNull final String issuer,
+                                                 @NonNull final String target, @NonNull final String reason, @NonNull final int lengthInMinutes) {
         final long now = System.currentTimeMillis();
 
         final long then = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(lengthInMinutes);
@@ -157,7 +165,7 @@ public class PunishmentDB implements IPunishmentDB {
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", databaseBackend.getDatabaseName()));
             ++lastPunishmentId;
             s.setInt(1, lastPunishmentId);
-            s.setString(2, type);
+            s.setString(2, type.getType());
             s.setString(3, issuer);
             s.setString(4, target);
             s.setString(5, reason);
@@ -165,7 +173,8 @@ public class PunishmentDB implements IPunishmentDB {
             s.setLong(7, now);
             s.setLong(8, endFormatted);
             databaseBackend.execute(s);
-            return Optional.of(new Punishment(databaseBackend.getPlugin(), lastPunishmentId, type, issuer, target, reason, lengthInMinutes,
+            return Optional.of(new Punishment(databaseBackend.getPlugin(), lastPunishmentId, type, issuer, target,
+                    reason, lengthInMinutes,
                     now, endFormatted));
         } catch(final SQLException e) {
             e.printStackTrace();
@@ -177,7 +186,8 @@ public class PunishmentDB implements IPunishmentDB {
     public List<Punishment> getExpiredPunishments() {
         final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection()
+                    .prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
             s.execute();
             final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
@@ -193,7 +203,8 @@ public class PunishmentDB implements IPunishmentDB {
                     continue;
                 }
                 if(end <= System.currentTimeMillis()) {
-                    punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
+                    punishments.add(new Punishment(databaseBackend.getPlugin(), id, PunishmentType.get(type), issuer,
+                            target, reason, lengthInMinutes, start, end));
                 }
             }
             s.close();
@@ -206,7 +217,8 @@ public class PunishmentDB implements IPunishmentDB {
     @Override
     public boolean removePunishment(@NonNull final Punishment p) {
         try {
-            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("DELETE FROM %s WHERE id = ?", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection()
+                    .prepareStatement(String.format("DELETE FROM %s WHERE id = ?", databaseBackend.getDatabaseName()));
             s.setInt(1, p.getId());
             return databaseBackend.execute(s);
         } catch(final SQLException e) {
@@ -230,7 +242,8 @@ public class PunishmentDB implements IPunishmentDB {
     public List<Punishment> getAllPunishments() {
         final List<Punishment> punishments = new CopyOnWriteArrayList<>();
         try {
-            final PreparedStatement s = databaseBackend.getConnection().prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
+            final PreparedStatement s = databaseBackend.getConnection()
+                    .prepareStatement(String.format("SELECT * FROM %s", databaseBackend.getDatabaseName()));
             s.execute();
             final ResultSet resultSet = s.getResultSet();
             while(resultSet.next()) {
@@ -242,7 +255,8 @@ public class PunishmentDB implements IPunishmentDB {
                 final int lengthInMinutes = resultSet.getInt("length");
                 final long start = resultSet.getLong("start");
                 final long end = resultSet.getLong("end");
-                punishments.add(new Punishment(databaseBackend.getPlugin(), id, type, issuer, target, reason, lengthInMinutes, start, end));
+                punishments.add(new Punishment(databaseBackend.getPlugin(), id, PunishmentType.get(type), issuer,
+                        target, reason, lengthInMinutes, start, end));
             }
             s.close();
         } catch(final SQLException e) {

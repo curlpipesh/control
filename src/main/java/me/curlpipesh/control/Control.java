@@ -13,7 +13,7 @@ import me.curlpipesh.control.fixes.Fix;
 import me.curlpipesh.control.fixes.NetherTopFix;
 import me.curlpipesh.control.fixes.SignHackFix;
 import me.curlpipesh.control.punishment.Punishment;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
@@ -64,9 +64,14 @@ public class Control extends SkirtsPlugin {
 
     private String lastPlayer = "";
 
+    @SuppressWarnings("FieldCanBeLocal")
     private boolean welcEnabled = true;
 
     private List<String> cmuteCommandsToBlock;
+
+    private final List<String> pmCommands = Arrays.<String>asList(
+            "msg", "w", "m", "t", "pm", "emsg", "epm", "tell", "etell", "whisper", "ewhisper"
+    );
 
     public Control() {
         final String sqlmode = getConfig().getString("sql-mode");
@@ -136,23 +141,23 @@ public class Control extends SkirtsPlugin {
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("ban").addAlias("banplayer")
                 .setDescription("Ban a player, for minutes, hours, days, or weeks")
                 .setUsage("/ban <player> [[t:]length<m|h|d|w>] [reason]").setPermissionNode("control.ban")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.BAN)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.BAN)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("banip").addAlias("ipban")
                 .setDescription("Ban an IP, by IP or player, for minutes, hours, days, or weeks")
                 .setUsage("/ban <player|IP> [[t:]length<m|h|d|w>] [reason]")
                 .setPermissionNode("control.banip")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.IP_BAN)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("cmute")
                 .setDescription("Prevents a player from using commands")
                 .setUsage("/cmute <player> [[t:]length<m|h|d|w>] [reason]").setPermissionNode("control.cmute")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.COMMAND_MUTE)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("mute")
                 .setDescription("Prevents a player from sending chat messages")
                 .setUsage("/mute <player> [[t:]length<m|h|d|w>] [reason]")
-                .setPermissionNode("control.mute").setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE))
+                .setPermissionNode("control.mute").setExecutor(new GenericPunishmentCommand(this, PunishmentType.MUTE))
                 .build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("kick")
@@ -166,21 +171,21 @@ public class Control extends SkirtsPlugin {
         // Undo commands
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("unban").addAlias("unbanplayer")
                 .setDescription("Unban a player").setUsage("/unban <player>").setPermissionNode("control.unban")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.BAN, true)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.BAN, true)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("unbanip").addAlias("unipban")
                 .setDescription("Unban an IP by player or IP").setUsage("/ban <player|IP>")
                 .setPermissionNode("control.unbanip")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.IP_BAN, true)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.IP_BAN, true)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("uncmute")
                 .setDescription("Un-command-mute a player").setUsage("/uncmute <player>")
                 .setPermissionNode("control.uncmute")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.COMMAND_MUTE, true)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.COMMAND_MUTE, true)).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("unmute")
                 .setDescription("Unmute a player").setUsage("/unmute <player>").setPermissionNode("control.unmute")
-                .setExecutor(new GenericPunishmentCommand(this, Punishments.MUTE, true)).build());
+                .setExecutor(new GenericPunishmentCommand(this, PunishmentType.MUTE, true)).build());
 
         // Admin chat
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("a").addAlias("adminchat").addAlias("ac")
@@ -245,19 +250,19 @@ public class Control extends SkirtsPlugin {
     private void loadPunishments() {
         activePunishments.getAllPunishments().forEach(p -> {
             switch(p.getType()) {
-                case Punishments.BAN:
+                case BAN:
                     bans.add(p.getTarget());
                     break;
-                case Punishments.COMMAND_MUTE:
+                case COMMAND_MUTE:
                     cmutes.add(p.getTarget());
                     break;
-                case Punishments.MUTE:
+                case MUTE:
                     mutes.add(p.getTarget());
                     break;
-                case Punishments.IP_BAN:
+                case IP_BAN:
                     ipBans.add(p.getTarget());
                     break;
-                case Punishments.WARN:
+                case WARN:
                     break;
                 default:
                     getLogger().warning("I don't know what \"" + p.getType() + "\" punishment type is?");
@@ -276,16 +281,16 @@ public class Control extends SkirtsPlugin {
             getLogger().info("Removing inactive punishment: " + p);
             activePunishments.removePunishment(p);
             switch(p.getType()) {
-                case Punishments.BAN:
+                case BAN:
                     bans.remove(p.getTarget());
                     break;
-                case Punishments.COMMAND_MUTE:
+                case COMMAND_MUTE:
                     cmutes.remove(p.getTarget());
                     break;
-                case Punishments.MUTE:
+                case MUTE:
                     mutes.remove(p.getTarget());
                     break;
-                case Punishments.IP_BAN:
+                case IP_BAN:
                     ipBans.remove(p.getTarget());
                     break;
                 default:
@@ -317,24 +322,32 @@ public class Control extends SkirtsPlugin {
             public void onAsyncPlayerPreLogin(final AsyncPlayerPreLoginEvent e) {
                 if(bans.contains(e.getUniqueId().toString())) {
                     final List<Punishment> p = activePunishments.getPunishments(e.getUniqueId().toString());
+                    final String end = p.get(p.size() - 1).getEnd() == Integer.MAX_VALUE ? "The end of time"
+                            : new Date(p.get(p.size() - 1).getEnd()).toString();
                     e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
-                            "\n\nExpires: " + new Date(p.get(p.size() - 1).getEnd()));
+                            "\n\nExpires: " + end);
                 }
                 if(ipBans.contains(e.getAddress().toString().replaceAll("/", ""))) {
                     final List<Punishment> p = activePunishments.getPunishments(e.getAddress().toString().replaceAll("/", ""));
+                    final String end = p.get(p.size() - 1).getEnd() == Integer.MAX_VALUE ? "The end of time"
+                            : new Date(p.get(p.size() - 1).getEnd()).toString();
                     e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
-                            "\n\nExpires: " + new Date(p.get(p.size() - 1).getEnd()));
+                            "\n\nExpires: " + end);
                 }
             }
         }, this);
         Bukkit.getPluginManager().registerEvents(new Listener() {
-            // So it turns out that this actually can't be done by listening for chat events
-            // I guess Bukkit does it that way because reasons or something
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onCommandPreprocess(final PlayerCommandPreprocessEvent e) {
                 final String uuid = e.getPlayer().getUniqueId().toString();
                 final String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(mutes.contains(uuid) || mutes.contains(ip)) {
+                    if(pmCommands.contains(e.getMessage().split(" ")[0].replaceAll("/", ""))) {
+                        sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
+                        e.setCancelled(true);
+                    }
+                }
                 if(cmutes.contains(uuid) || cmutes.contains(ip)) {
                     if(cmuteCommandsToBlock.isEmpty()) {
                         sendMessage(e.getPlayer(), "§7You're still command-muted! You can't do that!");
@@ -385,25 +398,23 @@ public class Control extends SkirtsPlugin {
     private void readyWelc() {
         lastPlayer = "";
         welcEnabled = getConfig().getBoolean("welc-enabled", true);
-        getServer().getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            @SuppressWarnings("unused")
-            public void onPlayerLoginEvent(final PlayerLoginEvent e) {
-                if(welcEnabled) {
+        if(welcEnabled) {
+            getServer().getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                @SuppressWarnings("unused")
+                public void onPlayerLoginEvent(final PlayerLoginEvent e) {
                     lastPlayer = e.getPlayer().getPlayer().getName();
                 }
-            }
-        }, this);
-        getServer().getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            @SuppressWarnings("unused")
-            public void onAsyncPlayerChatEvent(final AsyncPlayerChatEvent e) {
-                if(welcEnabled) {
+            }, this);
+            getServer().getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                @SuppressWarnings("unused")
+                public void onAsyncPlayerChatEvent(final AsyncPlayerChatEvent e) {
                     if(e.getMessage().equalsIgnoreCase("welc")) {
                         e.setMessage("Welcome, " + lastPlayer + '!');
                     }
                 }
-            }
-        }, this);
+            }, this);
+        }
     }
 }

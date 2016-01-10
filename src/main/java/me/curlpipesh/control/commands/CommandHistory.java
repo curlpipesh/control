@@ -2,7 +2,7 @@ package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
 import net.md_5.bungee.api.ChatColor;
@@ -35,10 +35,12 @@ public class CommandHistory extends CCommand {
             final String playerName = args[0];
             final Optional<SkirtsUser> skirtsUser = Users.getInstance().getSkirtsUserMap().getUserByName(playerName);
             if(skirtsUser.isPresent()) {
-                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments().getPunishments(skirtsUser.get().getUuid().toString()));
-                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments().getPunishments(skirtsUser.get().getUuid().toString()));
-                active = active.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
-                inactive = inactive.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
+                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments()
+                        .getPunishments(skirtsUser.get().getUuid().toString()));
+                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments()
+                        .getPunishments(skirtsUser.get().getUuid().toString()));
+                active = active.stream().filter(p -> p.getType() != PunishmentType.WARN).collect(Collectors.<Punishment>toList());
+                inactive = inactive.stream().filter(p -> p.getType() != PunishmentType.WARN).collect(Collectors.<Punishment>toList());
                 if(!active.isEmpty() || !inactive.isEmpty()) {
                     commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7's history:");
                     commandSender.sendMessage("§7§m------------------------------------§7");
@@ -48,8 +50,8 @@ public class CommandHistory extends CCommand {
                     for(final Punishment p : inactive) {
                         sendMessage(commandSender, p, false);
                     }
-                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has §c" + (active.size() + inactive.size())
-                            + "§7 total punishments");
+                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has §c" +
+                            (active.size() + inactive.size()) + "§7 total punishments");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                 } else {
                     commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has a clean history!");

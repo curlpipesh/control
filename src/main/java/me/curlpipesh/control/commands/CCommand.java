@@ -2,7 +2,7 @@ package me.curlpipesh.control.commands;
 
 import lombok.Getter;
 import me.curlpipesh.control.Control;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.control.util.TimeUtil;
 import org.bukkit.command.CommandExecutor;
 
@@ -15,13 +15,14 @@ public abstract class CCommand implements CommandExecutor {
     private final Control control;
 
 
-    public CCommand(Control control) {
+    public CCommand(final Control control) {
         this.control = control;
     }
 
-    protected final void announcePunishment(String issuer, String player, String punishment, String reason, String length) {
-        String m = String.format("§7%s §c%s§7 %s for %s:", issuer,
-                Punishments.english(punishment), player, TimeUtil.english(length));
+    protected final void announcePunishment(final String issuer, final String player, final PunishmentType punishment,
+                                            final String reason, final String length) {
+        final String m = String.format("§7%s §c%s§7 %s for %s:", issuer,
+                PunishmentType.english(punishment), player, TimeUtil.english(length));
         control.broadcastImportantMessage(m, "§c" + reason);
     }
 }

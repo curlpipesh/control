@@ -3,7 +3,7 @@ package me.curlpipesh.control.commands;
 import com.google.common.collect.Lists;
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
 import net.md_5.bungee.api.ChatColor;
@@ -36,8 +36,10 @@ public class CommandWarns extends CCommand {
             final String playerName = args[0];
             final Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(playerName);
             if(skirtsUserOptional.isPresent()) {
-                List<Punishment> punishments = new ArrayList<>(getControl().getActivePunishments().getPunishments(skirtsUserOptional.get().getUuid().toString()));
-                punishments = Lists.reverse(punishments.stream().filter(p -> p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList()));
+                List<Punishment> punishments = new ArrayList<>(getControl().getActivePunishments()
+                        .getPunishments(skirtsUserOptional.get().getUuid().toString()));
+                punishments = Lists.reverse(punishments.stream().filter(p -> p.getType() == PunishmentType.WARN)
+                        .collect(Collectors.<Punishment>toList()));
                 if(!punishments.isEmpty()) {
                     commandSender.sendMessage("§a" + skirtsUserOptional.get().getLastName() + "§7's warnings:");
                     commandSender.sendMessage("§7§m------------------------------------§7");

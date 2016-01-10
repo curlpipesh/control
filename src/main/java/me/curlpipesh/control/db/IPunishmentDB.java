@@ -2,6 +2,7 @@ package me.curlpipesh.control.db;
 
 import lombok.NonNull;
 import me.curlpipesh.control.punishment.Punishment;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.util.database.IDatabase;
 
 import java.util.List;
@@ -19,7 +20,8 @@ public interface IPunishmentDB {
 
     Optional<Punishment> insertPunishment(@NonNull Punishment p);
 
-    Optional<Punishment> insertPunishment(@NonNull String type, @NonNull String issuer, @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes);
+    Optional<Punishment> insertPunishment(@NonNull PunishmentType type, @NonNull String issuer,
+                                          @NonNull String target, @NonNull String reason, @NonNull int lengthInMinutes);
 
     List<Punishment> getExpiredPunishments();
 

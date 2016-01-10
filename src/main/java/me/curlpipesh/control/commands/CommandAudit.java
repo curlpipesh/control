@@ -2,7 +2,7 @@ package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
 import net.md_5.bungee.api.ChatColor;
@@ -36,10 +36,12 @@ public class CommandAudit extends CCommand {
             final String playerName = args[0];
             final Optional<SkirtsUser> skirtsUser = Users.getInstance().getSkirtsUserMap().getUserByName(playerName);
             if(skirtsUser.isPresent()) {
-                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments().getPunishmentsBy(skirtsUser.get().getUuid().toString()));
-                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments().getPunishmentsBy(skirtsUser.get().getUuid().toString()));
-                active = active.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
-                inactive = inactive.stream().filter(p -> !p.getType().equals(Punishments.WARN)).collect(Collectors.<Punishment>toList());
+                List<Punishment> active = new ArrayList<>(getControl().getActivePunishments()
+                        .getPunishmentsBy(skirtsUser.get().getUuid().toString()));
+                List<Punishment> inactive = new ArrayList<>(getControl().getInactivePunishments()
+                        .getPunishmentsBy(skirtsUser.get().getUuid().toString()));
+                active = active.stream().filter(p -> p.getType() != PunishmentType.WARN).collect(Collectors.<Punishment>toList());
+                inactive = inactive.stream().filter(p -> p.getType() != PunishmentType.WARN).collect(Collectors.<Punishment>toList());
                 if(!active.isEmpty() || !inactive.isEmpty()) {
                     commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7's stats:");
                     commandSender.sendMessage("§7§m------------------------------------§7");
@@ -49,8 +51,8 @@ public class CommandAudit extends CCommand {
                     for(final Punishment p : inactive) {
                         sendMessage(commandSender, p, false);
                     }
-                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has §c" + (active.size() + inactive.size())
-                            + "§7 total punishments");
+                    commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has §c" +
+                            (active.size() + inactive.size()) + "§7 total punishments");
                     commandSender.sendMessage("§7§m------------------------------------§7");
                 } else {
                     commandSender.sendMessage("§a" + skirtsUser.get().getLastName() + "§7 has no issued punishments!");
@@ -89,9 +91,9 @@ public class CommandAudit extends CCommand {
                 new ComponentBuilder("On: ").color(ChatColor.DARK_PURPLE).append(target).color(ChatColor.RESET)
                         .append("\n").append("From: ").color(ChatColor.DARK_PURPLE).append(new Date(p.getStart()).toString())
                         .color(ChatColor.RESET).append("\n").color(ChatColor.DARK_PURPLE).append("Until: ")
-                        .append(p.getEnd() == Integer.MAX_VALUE ? "The end of time" : new Date(p.getEnd()).toString()).color(ChatColor.RESET).append("\n").append("")
-                        .append(active ? "Active" : "Inactive").color(active ? ChatColor.RED : ChatColor.GREEN)
-                        .create());
+                        .append(p.getEnd() == Integer.MAX_VALUE ? "The end of time" : new Date(p.getEnd()).toString())
+                        .color(ChatColor.RESET).append("\n").append("").append(active ? "Active" : "Inactive")
+                        .color(active ? ChatColor.RED : ChatColor.GREEN).create());
         firstLine.setHoverEvent(e);
         //secondLine.setHoverEvent(e);
         if(commandSender instanceof Player) {
@@ -100,7 +102,7 @@ public class CommandAudit extends CCommand {
             //player.spigot().sendMessage(secondLine);
         } else {
             commandSender.sendMessage(m);
-            commandSender.sendMessage(String.format("§7 * By §a%s§7 for §c%s§7.", target, p.getReason()));
+            commandSender.sendMessage(String.format("§7 * on §a%s§7 for §c%s§7.", target, p.getReason()));
         }
     }
 }

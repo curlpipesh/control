@@ -2,7 +2,7 @@ package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
-import me.curlpipesh.control.punishment.Punishments;
+import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.control.util.TimeUtil;
 import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import sun.net.util.IPAddressUtil;
 
-import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +25,7 @@ import java.util.function.BooleanSupplier;
  */
 @SuppressWarnings({"unused", "Duplicates"})
 public class GenericPunishmentCommand extends CCommand {
-    private final String type;
+    private final PunishmentType type;
     private final boolean punishIP;
     private final boolean isUndo;
     private final String banFormatString;
@@ -40,7 +39,7 @@ public class GenericPunishmentCommand extends CCommand {
      * @param control Plugin instance
      * @param type    Punishment type
      */
-    public GenericPunishmentCommand(final Control control, final String type) {
+    public GenericPunishmentCommand(final Control control, final PunishmentType type) {
         this(control, type, false);
     }
 
@@ -51,11 +50,11 @@ public class GenericPunishmentCommand extends CCommand {
      * @param type    Punishment type
      * @param isUndo  Whether or not the command undoes a punishment
      */
-    public GenericPunishmentCommand(final Control control, final String type, final boolean isUndo) {
+    public GenericPunishmentCommand(final Control control, final PunishmentType type, final boolean isUndo) {
         super(control);
         this.type = type;
         this.isUndo = isUndo;
-        punishIP = type.equals(Punishments.IP_BAN);
+        punishIP = type == PunishmentType.IP_BAN;
         banFormatString = control.getConfig().getString("ban-message");
         noUndoString = control.getConfig().getString("no-undo");
         unpunishSuccessString = control.getConfig().getString("unpunish-success");
@@ -76,7 +75,7 @@ public class GenericPunishmentCommand extends CCommand {
                 }
             }
 
-            String reason = "§c" + type + "§7";
+            String reason = "§c" + type.getType() + "§7";
             if(t) {
                 if(args.length > 2) {
                     reason = "";
@@ -99,15 +98,8 @@ public class GenericPunishmentCommand extends CCommand {
                 final String finalTarget;
 
                 if(punishIP) {
-                    /*if(essUser.get().getIp() != null) {
-                        finalTarget = essUser.get().getIp().toString().replaceAll("/", "");
-                        // ((User)essUser).getBase().getAddress().getAddress().toString().replaceAll("/", "");
-                    } else {
-                        finalTarget = essUser.getLastLoginAddress().replaceAll("/", "");
-                    }*/
                     finalTarget = skirtsUser.get().getIp().toString().replaceAll("/", "");
                 } else {
-                    //finalTarget = essUser.getConfigUUID().toString();
                     finalTarget = skirtsUser.get().getUuid().toString();
                 }
 
@@ -121,7 +113,7 @@ public class GenericPunishmentCommand extends CCommand {
                                             ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                     finalTarget, reason, time);
 
-                    if(type.equals(Punishments.BAN)) {
+                    if(type == PunishmentType.BAN) {
                         kickForBan(Bukkit.getPlayer(skirtsUser.get().getUuid()), formatBan(reason,
                                 t ? TimeUtil.english(args[1]) : "Forever",
                                 p.isPresent() ? new Date(p.get().getEnd()).toString() : "Some point in the future"),
@@ -147,7 +139,7 @@ public class GenericPunishmentCommand extends CCommand {
                             .insertPunishment(type,
                                     commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
                                     target, reason, time);
-                    if(type.equals(Punishments.BAN) || type.equals(Punishments.IP_BAN)) {
+                    if(type == PunishmentType.BAN || type == PunishmentType.IP_BAN) {
                         for(final Player player : Bukkit.getOnlinePlayers()) {
                             kickForBan(player, formatBan(reason,
                                     t ? TimeUtil.english(args[1]) : "Forever",
@@ -167,7 +159,7 @@ public class GenericPunishmentCommand extends CCommand {
         }
     }
 
-    private void unpunish(final String target, final CommandSender commandSender, @Nullable final SkirtsUser essUser) {
+    private void unpunish(final String target, final CommandSender commandSender, final SkirtsUser essUser) {
         final List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
         if(activePunishments.isEmpty()) {
             getControl().sendMessage(commandSender, noUndoString);
@@ -191,9 +183,9 @@ public class GenericPunishmentCommand extends CCommand {
         return banFormatString.replaceAll("<reason>", reason).replaceAll("<time>", time).replaceAll("<end>", end);
     }
 
-    private String formatUnpunish(final String name, final String type) {
+    private String formatUnpunish(final String name, final PunishmentType type) {
         return unpunishSuccessString.replaceAll("<name>", name)
-                .replaceAll("<punishment>", Punishments.english(type));
+                .replaceAll("<punishment>", PunishmentType.english(type));
     }
 
     private void kickForBan(final Player player, final String message, final BooleanSupplier condition) {
@@ -202,30 +194,30 @@ public class GenericPunishmentCommand extends CCommand {
         }
     }
 
-    private void handlePunishment(final String type, final String target) {
+    private void handlePunishment(final PunishmentType type, final String target) {
         switch(type) {
-            case Punishments.COMMAND_MUTE:
+            case COMMAND_MUTE:
                 if(isUndo) {
                     getControl().getCmutes().remove(target);
                 } else {
                     getControl().getCmutes().add(target);
                 }
                 break;
-            case Punishments.MUTE:
+            case MUTE:
                 if(isUndo) {
                     getControl().getMutes().remove(target);
                 } else {
                     getControl().getMutes().add(target);
                 }
                 break;
-            case Punishments.BAN:
+            case BAN:
                 if(isUndo) {
                     getControl().getBans().remove(target);
                 } else {
                     getControl().getBans().add(target);
                 }
                 break;
-            case Punishments.IP_BAN:
+            case IP_BAN:
                 if(isUndo) {
                     getControl().getIpBans().remove(target);
                 } else {
