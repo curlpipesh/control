@@ -20,6 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Shows the punishments issued by a player
+ *
  * TODO: Make this not shit
  *
  * @author audrey

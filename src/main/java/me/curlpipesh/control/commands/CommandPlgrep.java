@@ -10,20 +10,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Greps for a plugin in the list of plugins. No regex matching
+ *
  * @author audrey
  * @since 10/3/15.
  */
 public class CommandPlgrep extends CCommand {
-    public CommandPlgrep(Control control) {
+    public CommandPlgrep(final Control control) {
         super(control);
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] args) {
         if(args.length > 0) {
             String accum = "";
             for(final String e : args) {
-                accum += e + " ";
+                accum += e + ' ';
             }
             accum = accum.trim();
             final String grep = accum.toLowerCase();

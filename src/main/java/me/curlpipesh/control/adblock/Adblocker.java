@@ -25,14 +25,36 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("Duplicates")
 public class Adblocker implements Listener {
-    private final Pattern urlRegex = Pattern.compile("(http://)*(([A-Za-z_0-9-]+)(\\.|,))*([A-Za-z_0-9-]+)(\\.|,)([A-Za-z]+)(:[0-9]{1,5})*");
+    /**
+     * Matches proper URLs.
+     */
+    private final Pattern urlRegex = Pattern.compile("(http(s)*://)*(([A-Za-z_0-9-]+)(\\.|,))*([A-Za-z_0-9-]+)(\\.|,)([A-Za-z]+)(:[0-9]{1,5})*");
+    /**
+     * Matches IP addresses
+     */
     private final Pattern ipRegex = Pattern.compile("([01]?\\d\\d?|2[0-4]\\d|25[0-5])(\\.|,)([01]?\\d\\d?|2[0-4]\\d|25[0-5])(\\.|,)([01]?\\d\\d?|2[0-4]\\d|25[0-5])(\\.|,)([01]?\\d\\d?|2[0-4]\\d|25[0-5])(:[0-9]{1,5})*");
 
     private final Control control;
+
+    /**
+     * Punishment to apply
+     */
     private final String punishmentType;
+
+    /**
+     * Message sent to say that we're checking to see if it's an ad
+     */
     private final String adCheckMessage;
+
+    /**
+     * Message sent when it's determined that the message is clean
+     */
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final String notAnAdMessage;
+
+    /**
+     * How long the punishment should be apploed for
+     */
     private final String punishmentLength;
 
     public Adblocker(final Control control) {
@@ -43,7 +65,10 @@ public class Adblocker implements Listener {
         punishmentLength = control.getConfig().getString("punishment-length");
     }
 
-
+    /**
+     * Does the magic
+     * @param event The event to magick
+     */
     @SuppressWarnings("unused")
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onAsyncPlayerChat(final AsyncPlayerChatEvent event) {

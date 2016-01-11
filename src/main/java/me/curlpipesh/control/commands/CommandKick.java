@@ -10,28 +10,30 @@ import org.bukkit.command.CommandSender;
 import java.util.Optional;
 
 /**
+ * Kicks a player from the server, broadcasting the kick.
+ *
  * @author audrey
  * @since 10/2/15.
  */
 public class CommandKick extends CCommand {
     private final String invalidTargetString;
 
-    public CommandKick(Control control) {
+    public CommandKick(final Control control) {
         super(control);
         invalidTargetString = control.getConfig().getString("invalid-target");
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] args) {
         if(args.length >= 1) {
-            String target = args[0];
-            Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(target);
+            final String target = args[0];
+            final Optional<SkirtsUser> skirtsUserOptional = Users.getInstance().getSkirtsUserMap().getUserByName(target);
             String reason = "§cKicked§7";
 
             if(args.length > 1) {
                 reason = "";
                 for(int i = 1; i < args.length; i++) {
-                    reason += args[i] + " ";
+                    reason += args[i] + ' ';
                 }
                 reason = reason.trim();
             }

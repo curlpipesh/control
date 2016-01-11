@@ -21,17 +21,14 @@ punishment-type: "mute"
 # 3h  - 3 hours
 # etc.
 punishment-length: "5m"
-
 # Part of server's description goes here. Used for not recognizing us as an ad
 home: "A Minecraft Server"
-# Defaults to false because it can be a touch overbearing
 adblock-enabled: true
-# TODO: Unused?
 ad-check-message: "§7Are you advertising? Give us a minute to check..."
 not-ad-message: "§7You're not advertising. Sorry about that."
 
 # Valid values: "sqlite"
-# MySQL will be added soon
+# MySQL will be added soon(TM)
 # NEVER CHANGE THIS ONCE IT HAS BEEN SET
 sql-mode: "sqlite"
 
@@ -41,3 +38,6 @@ cmute-blocked-cmds: []
 
 # Whether or not typing 'welc' in chat sends 'Welcome, <last player to log in>!'
 welc-enabled: true
+
+# Whether or not to prevent a player from sending PMs when he or she is muted
+block-pms-when-muted: true

@@ -20,6 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Shows all warnings for a user
+ *
  * TODO Fuck it I'll clean this up later
  *
  * @author audrey

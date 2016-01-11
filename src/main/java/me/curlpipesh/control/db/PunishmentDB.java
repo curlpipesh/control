@@ -264,9 +264,4 @@ public class PunishmentDB implements IPunishmentDB {
         }
         return punishments;
     }
-
-    @SuppressWarnings("unused")
-    public enum DBMode {
-        SQLITE, MYSQL
-    }
 }

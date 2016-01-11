@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * Shows server specs and stuff
+ *
  * @author audrey
  * @since 12/14/15.
  */

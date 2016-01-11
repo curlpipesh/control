@@ -6,16 +6,18 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 /**
+ * Shocklingly, this clears the chat.
+ *
  * @author audrey
  * @since 8/29/15.
  */
 public class CommandClearChat extends CCommand {
-    public CommandClearChat(Control control) {
+    public CommandClearChat(final Control control) {
         super(control);
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+    public boolean onCommand(final CommandSender commandSender, final Command command, final String s, final String[] strings) {
         for(int i = 0; i < 100; i++) {
             Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(""));
         }

@@ -3,15 +3,31 @@ package me.curlpipesh.control.util;
 import java.util.regex.Pattern;
 
 /**
+ * Utilities related to parsing time from
+ * {@link me.curlpipesh.control.commands.GenericPunishmentCommand}.
+ *
  * @author audrey
  * @since 8/23/15.
  */
 public final class TimeUtil {
+    /**
+     * Used for recognizing whether or not something is a valid time.
+     */
     private static final Pattern TIME_PATTERN = Pattern.compile("^(?i)(t:)*(\\d+)(m|h|d|w)*$");
 
     private TimeUtil() {
     }
 
+    /**
+     * Takes a given input and converts it into minutes. In the case of a
+     * failed parse (invalid time unit, not an integer, ...), it returns
+     * {@link Integer#MAX_VALUE}, which is generally recognized as "this
+     * will last until the end of time."
+     *
+     * @param t The time string to parse
+     * @return The number of minutes represented by the time string. May be
+     *         a very large number
+     */
     public static int parseTimeIntoMinutes(String t) {
         t = t.toLowerCase();
         if(t.startsWith("t:")) {
@@ -50,10 +66,25 @@ public final class TimeUtil {
         }
     }
 
+    /**
+     * Returns whether or not the given input is a valid time string, as
+     * determined by {@link #TIME_PATTERN}.
+     *
+     * @param string The string to validate
+     * @return Whether or not the string is a valid time string
+     */
     public static boolean isValidTime(final CharSequence string) {
         return TIME_PATTERN.matcher(string).matches();
     }
 
+    /**
+     * Converts a time string into an English representation of itself. Failure
+     * to parse a time string is assumed to mean that the time string is meant
+     * to signify an infinite length of time.
+     *
+     * @param t The time string to convert
+     * @return The converted time string
+     */
     public static String english(String t) {
         t = t.toLowerCase();
         if(t.startsWith("t:")) {

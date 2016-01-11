@@ -9,18 +9,21 @@ import java.net.Socket;
 import java.util.List;
 
 /**
- * @author audrey
+ * Not actually mine. Used for pining a Minecraft server and reading the
+ * response.
+ *
+ * @author unknown
  * @since 8/30/15.
  */
 @SuppressWarnings("unused")
 public class ServerListPing {
     private InetSocketAddress host;
     private int timeout;
-    private Gson gson;
+    private final Gson gson;
 
     public ServerListPing() {
-        this.timeout = 7000;
-        this.gson = new Gson();
+        timeout = 7000;
+        gson = new Gson();
     }
 
     public void setAddress(final InetSocketAddress host) {
@@ -28,7 +31,7 @@ public class ServerListPing {
     }
 
     public InetSocketAddress getAddress() {
-        return this.host;
+        return host;
     }
 
     void setTimeout(final int timeout) {
@@ -36,16 +39,17 @@ public class ServerListPing {
     }
 
     int getTimeout() {
-        return this.timeout;
+        return timeout;
     }
 
-    public int readVarInt(final DataInputStream in) throws IOException {
+    public int readVarInt(final DataInput in) throws IOException {
         int i = 0;
         int j = 0;
         int k;
         do {
             k = in.readByte();
-            i |= (k & 0x7F) << j++ * 7;
+            i |= (k & 0x7F) << j * 7;
+            j++;
             if (j > 5) {
                 throw new RuntimeException("VarInt too big");
             }
@@ -53,9 +57,9 @@ public class ServerListPing {
         return i;
     }
 
-    public void writeVarInt(final DataOutputStream out, int paramInt) throws IOException {
+    public void writeVarInt(final DataOutput out, int paramInt) throws IOException {
         while ((paramInt & 0xFFFFFF80) != 0x0) {
-            out.writeByte((paramInt & 0x7F) | 0x80);
+            out.writeByte(paramInt & 0x7F | 0x80);
             paramInt >>>= 7;
         }
         out.writeByte(paramInt);
@@ -63,35 +67,35 @@ public class ServerListPing {
 
     public StatusResponse fetchData() throws IOException {
         try(Socket socket = new Socket()) {
-            Bukkit.getLogger().info("Host: '" + host + "'");
-            socket.setSoTimeout(this.timeout);
-            socket.connect(this.host, this.timeout);
+            Bukkit.getLogger().info("Host: '" + host + '\'');
+            socket.setSoTimeout(timeout);
+            socket.connect(host, timeout);
             final OutputStream outputStream = socket.getOutputStream();
             final DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
             final InputStream inputStream = socket.getInputStream();
             final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             final ByteArrayOutputStream b = new ByteArrayOutputStream();
-            final DataOutputStream handshake = new DataOutputStream(b);
+            final DataOutput handshake = new DataOutputStream(b);
             handshake.writeByte(0);
-            this.writeVarInt(handshake, 4);
-            this.writeVarInt(handshake, this.host.getHostString().length());
-            handshake.writeBytes(this.host.getHostString());
-            handshake.writeShort(this.host.getPort());
-            this.writeVarInt(handshake, 1);
-            this.writeVarInt(dataOutputStream, b.size());
+            writeVarInt(handshake, 4);
+            writeVarInt(handshake, host.getHostString().length());
+            handshake.writeBytes(host.getHostString());
+            handshake.writeShort(host.getPort());
+            writeVarInt(handshake, 1);
+            writeVarInt(dataOutputStream, b.size());
             dataOutputStream.write(b.toByteArray());
             dataOutputStream.writeByte(1);
             dataOutputStream.writeByte(0);
-            final DataInputStream dataInputStream = new DataInputStream(inputStream);
-            final int size = this.readVarInt(dataInputStream);
-            int id = this.readVarInt(dataInputStream);
+            final DataInput dataInputStream = new DataInputStream(inputStream);
+            final int size = readVarInt(dataInputStream);
+            int id = readVarInt(dataInputStream);
             if(id == -1) {
                 throw new IOException("Premature end of stream.");
             }
             if(id != 0) {
                 throw new IOException("Invalid packetID");
             }
-            final int length = this.readVarInt(dataInputStream);
+            final int length = readVarInt(dataInputStream);
             if(length == -1) {
                 throw new IOException("Premature end of stream.");
             }
@@ -105,8 +109,8 @@ public class ServerListPing {
             dataOutputStream.writeByte(9);
             dataOutputStream.writeByte(1);
             dataOutputStream.writeLong(now);
-            this.readVarInt(dataInputStream);
-            id = this.readVarInt(dataInputStream);
+            readVarInt(dataInputStream);
+            id = readVarInt(dataInputStream);
             if(id == -1) {
                 throw new IOException("Premature end of stream.");
             }
@@ -114,7 +118,7 @@ public class ServerListPing {
                 throw new IOException("Invalid packetID");
             }
             final long pingtime = dataInputStream.readLong();
-            final StatusResponse response = (StatusResponse) this.gson.fromJson(json, (Class) StatusResponse.class);
+            final StatusResponse response = (StatusResponse) gson.fromJson(json, (Class) StatusResponse.class);
             response.setTime((int) (now - pingtime));
             dataOutputStream.close();
             outputStream.close();
@@ -134,23 +138,23 @@ public class ServerListPing {
         private int time;
 
         public String getDescription() {
-            return this.description;
+            return description;
         }
 
         public Players getPlayers() {
-            return this.players;
+            return players;
         }
 
         public Version getVersion() {
-            return this.version;
+            return version;
         }
 
         public String getFavicon() {
-            return this.favicon;
+            return favicon;
         }
 
         public int getTime() {
-            return this.time;
+            return time;
         }
 
         public void setTime(final int time) {
@@ -165,15 +169,15 @@ public class ServerListPing {
         private List<Player> sample;
 
         public int getMax() {
-            return this.max;
+            return max;
         }
 
         public int getOnline() {
-            return this.online;
+            return online;
         }
 
         public List<Player> getSample() {
-            return this.sample;
+            return sample;
         }
     }
 
@@ -183,11 +187,11 @@ public class ServerListPing {
         private String id;
 
         public String getName() {
-            return this.name;
+            return name;
         }
 
         public String getId() {
-            return this.id;
+            return id;
         }
     }
 
@@ -197,11 +201,11 @@ public class ServerListPing {
         private String protocol;
 
         public String getName() {
-            return this.name;
+            return name;
         }
 
         public String getProtocol() {
-            return this.protocol;
+            return protocol;
         }
     }
 }

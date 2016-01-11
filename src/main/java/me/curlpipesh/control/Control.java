@@ -32,45 +32,142 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
+ * Main class of the plugin. Is filled with a bazillion event listeners and
+ * other such nonsenses. It really really really needs to be cleaned up but so
+ * far I've been too lazy to do that.
+ * <p>
+ * Punishments are stored in two separate databases, because I was too lazy to
+ * make it store them all in one database with a flag to indicate whether or
+ * not the specific punishment is active. All active punishments are
+ * <code>SELECT</code>ed from the active punishments database once every
+ * minute. Hopefully this doesn't kill performance when there's thousands of
+ * active punishments for a server.
+ * <p>
+ * Continuing with the trend of odd design choices, active
+ * mutes/command-mutes/bans/IP-bans are stored in lists of Strings that hold
+ * IPs or UUIDs. Again, I'm not sure why I thought that this was a good idea.
+ * This is probably gonna change in the future when I figure out a better way
+ * to handle this, probably by just storing actual {@link Punishment}s.
+ * <p>
+ * <b>TL;DR:</b> You're on your own. Good luck.
+ *
+ * TODO: Make active punishments store more than just UUIDs/IPs
+ * TODO: Make punishments be one DB with a flag?
+ * TODO: MySQL support for databases
+ *
  * @author audrey
  * @since 8/23/15.
  */
 public class Control extends SkirtsPlugin {
+    /**
+     * Database that stores the active punishments.
+     */
     @Getter
     private final IPunishmentDB activePunishments;
 
+    /**
+     * Database that stores inactive punishments
+     */
     @Getter
     private final IPunishmentDB inactivePunishments;
 
+    /**
+     * All mutes that are currently active. May be UUIDs or IPs.
+     */
     @Getter
     private final Collection<String> mutes = new CopyOnWriteArrayList<>();
 
+    /**
+     * All command-mutes that are currently active. May be UUIDs or IPs.
+     */
     @Getter
     private final Collection<String> cmutes = new CopyOnWriteArrayList<>();
 
+    /**
+     * All bans that are currently active.
+     */
     @Getter
     private final Collection<String> bans = new CopyOnWriteArrayList<>();
 
+    /**
+     * All IP-bans that are currently active.
+     */
     @Getter
     private final Collection<String> ipBans = new CopyOnWriteArrayList<>();
 
+    /**
+     * The prefix for chat messages. For instance, when a command sends a
+     * single message to a player, it will be used.
+     * <p>
+     * Example:
+     * <p>
+     * <code>[Control] This is a message!</code>
+     */
     @Getter
     private String chatPrefix;
 
+    /**
+     * The header (but also footer) used for important chat messages or
+     * broadcasts.
+     * <p>
+     * Example:
+     * <p>
+     * <code>
+     *     --------[Control]--------<br />
+     *     This is an extremely     <br />
+     *     important message!       <br />
+     *     :O                       <br />
+     *     --------[Control]--------<br />
+     * </code>
+     */
     @Getter
     private String chatHeader;
 
-    private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix());
+    /**
+     * Fixes to apply. Generally, fixes are just patches for a glitch in
+     * Vanilla Minecraft, such as building on top of the Nether, or the
+     * sign-crash exploit from early versions of 1.8-RELEASE. This may also be
+     * used for fixing things like "Freecam" with an event listener.
+     *
+     * TODO: Further testing of FreecamFix
+     */
+    private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix()/*, new FreecamFix()*/);
 
+    /**
+     * The last player to join. Used for the 'welc' functionality.
+     *
+     * TODO: Extract to another class
+     */
     private String lastPlayer = "";
 
+    /**
+     * Whether or not the 'welc' functionality is enabled.
+     *
+     * TODO: Extract to another class
+     */
     @SuppressWarnings("FieldCanBeLocal")
     private boolean welcEnabled = true;
 
+    /**
+     * Commands that a command-mute will block. This is a list read in from
+     * <code>config.yml</code>.
+     */
     private List<String> cmuteCommandsToBlock;
 
+    /**
+     * Whether or not private messages should be blocked when a player is
+     * muted. This is to prevent players from continuing to spam/advertise/etc.
+     * while they are muted.
+     */
+    private boolean blockPmsWhenMuted = true;
+
+    /**
+     * List of all commands known to be usable for private messaging/spamming.
+     * Taken from Essentials. There may be others that aren't listed.
+     */
     private final List<String> pmCommands = Arrays.<String>asList(
-            "msg", "w", "m", "t", "pm", "emsg", "epm", "tell", "etell", "whisper", "ewhisper"
+            "msg", "w", "m", "t", "pm", "emsg", "epm", "tell", "etell", "whisper", "ewhisper", "r", "er", "reply",
+            "ereply", "helpop", "ac", "eac", "amsg", "eamsg", "ehelpop", "mail", "email", "eemail", "memo", "ememo"
     );
 
     public Control() {
@@ -87,25 +184,34 @@ public class Control extends SkirtsPlugin {
     }
 
     public void onEnable() {
+        // TODO: Why
         if(!getDataFolder().exists()) {
             getLogger().info("Data folder doesn't exist, making...");
             if(getDataFolder().mkdir()) {
                 getLogger().info("Data folder made!");
             }
         }
+        // Save default config if it doesn't exist, and update existing config
+        // files with new options, if applicable
         getLogger().info("Saving default config...");
         saveDefaultConfig();
         getConfig().options().copyDefaults(true);
+        // Load config values
         chatPrefix = getConfig().getString("chat-prefix");
         chatHeader = getConfig().getString("chat-header");
         cmuteCommandsToBlock = getConfig().getStringList("cmute-blocked-cmds");
+        blockPmsWhenMuted = getConfig().getBoolean("block-pms-when-muted");
         prepDBs();
         scheduleCleanupTask();
         registerEventBlockers();
         registerAdminChat();
+        // Apply fixes
         fixes.stream().forEach(f -> f.fix(this));
         readyWelc();
 
+        // Register commands. This is ugly, I know. It works, and avoids plugin.yml.
+
+        // Utility commands
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("audit")
                 .setDescription("Show all punishments issued by a player").setUsage("/audit <player>")
                 .setPermissionNode("control.audit").setExecutor(new CommandAudit(this)).build());
@@ -202,12 +308,38 @@ public class Control extends SkirtsPlugin {
         }
     }
 
+    /**
+     * Send a message or series of messages to a {@link CommandSender}. This
+     * can be used to send messages to players, but can also be used to send
+     * formatted messages to the console.
+     * <p>
+     * Messages sent with this will have {@link #chatPrefix} appended to the
+     * beginning of each message in the series.
+     *
+     * @param commandSender The receiver of the messages
+     * @param message The message or series of messages to be sent
+     */
     public void sendMessage(final CommandSender commandSender, final String... message) {
         for(final String e : message) {
             commandSender.sendMessage(String.format("%s %s", chatPrefix, e));
         }
     }
 
+    /**
+     * Send an important message or series of important messages to a
+     * {@link CommandSender}. May be used for the same purposes as
+     * {@link #sendMessage(CommandSender, String...)}.
+     * <p>
+     * Messages sent with this will be sent in the following order:
+     * <code>
+     * {@link #chatHeader}<br />
+     * &lt;series of messages&gt;<br />
+     * {@link #chatHeader}
+     * </code>
+     *
+     * @param commandSender The receiver of the messages
+     * @param message The message or series of messages to be sent
+     */
     public void sendImportantMessage(final CommandSender commandSender, final String... message) {
         commandSender.sendMessage(chatHeader);
         for(final String e : message) {
@@ -216,6 +348,12 @@ public class Control extends SkirtsPlugin {
         commandSender.sendMessage(chatHeader);
     }
 
+    /**
+     * Broadcast a message to the entire server using
+     * {@link #sendMessage(CommandSender, String...)}.
+     *
+     * @param message The message or series of messages to be sent
+     */
     public void broadcastMessage(final String... message) {
         for(final Player player : Bukkit.getOnlinePlayers()) {
             sendMessage(player, message);
@@ -223,6 +361,13 @@ public class Control extends SkirtsPlugin {
         sendMessage(Bukkit.getConsoleSender(), message);
     }
 
+    /**
+     * Broadcast a message to the entire server using
+     * {@link #sendImportantMessage(CommandSender, String...)}. Generally used
+     * for announcing punishments.
+     *
+     * @param message The message or series of messages to be sent.
+     */
     public void broadcastImportantMessage(final String... message) {
         for(final Player player : Bukkit.getOnlinePlayers()) {
             sendImportantMessage(player, message);
@@ -230,6 +375,12 @@ public class Control extends SkirtsPlugin {
         sendImportantMessage(Bukkit.getConsoleSender(), message);
     }
 
+    /**
+     * Connects to the databases and calls initialization methods.
+     *
+     * @throws IllegalStateException If the connection or initialization to the
+     *                               databases fails for any reason.
+     */
     private void prepDBs() {
         if(activePunishments.getDatabaseBackend().connect() && inactivePunishments.getDatabaseBackend().connect()) {
             getLogger().info("Connected to the databases!");
@@ -240,7 +391,8 @@ public class Control extends SkirtsPlugin {
                 getLogger().info("Initialised databases!");
                 loadPunishments();
             } else {
-                getLogger().warning("Unable to initialise databases!");
+                Bukkit.getPluginManager().disablePlugin(this);
+                throw new IllegalStateException("Unable to initialise databases!");
             }
         } else {
             Bukkit.getPluginManager().disablePlugin(this);
@@ -248,6 +400,9 @@ public class Control extends SkirtsPlugin {
         }
     }
 
+    /**
+     * Loads all active punishments out of the databases
+     */
     private void loadPunishments() {
         activePunishments.getAllPunishments().forEach(p -> {
             switch(p.getType()) {
@@ -301,6 +456,12 @@ public class Control extends SkirtsPlugin {
         }), 0L, 20L * 60L);
     }
 
+    /**
+     * Register event listeners to block chat messages for muted players,
+     * commands for command-muted players, login for banned players, ...
+     *
+     * TODO: Cleaner?
+     */
     private void registerEventBlockers() {
         if(getConfig().getBoolean("adblock-enabled")) {
             Bukkit.getPluginManager().registerEvents(new Adblocker(this), this);
@@ -343,10 +504,12 @@ public class Control extends SkirtsPlugin {
             public void onCommandPreprocess(final PlayerCommandPreprocessEvent e) {
                 final String uuid = e.getPlayer().getUniqueId().toString();
                 final String ip = e.getPlayer().getAddress().getAddress().toString();
-                if(mutes.contains(uuid) || mutes.contains(ip)) {
-                    if(pmCommands.contains(e.getMessage().split(" ")[0].replaceAll("/", ""))) {
-                        sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
-                        e.setCancelled(true);
+                if(blockPmsWhenMuted) {
+                    if(mutes.contains(uuid) || mutes.contains(ip)) {
+                        if(pmCommands.contains(e.getMessage().split(" ")[0].replaceAll("/", ""))) {
+                            sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
+                            e.setCancelled(true);
+                        }
                     }
                 }
                 if(cmutes.contains(uuid) || cmutes.contains(ip)) {
@@ -362,6 +525,9 @@ public class Control extends SkirtsPlugin {
         }, this);
     }
 
+    /**
+     * Register the event listeners required for AdminChat to function.
+     */
     private void registerAdminChat() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new PlayerMapperTask(), 20L);
         Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -396,6 +562,9 @@ public class Control extends SkirtsPlugin {
         }, this);
     }
 
+    /**
+     * Ready the event listeners required for 'welc' functionality to function.
+     */
     private void readyWelc() {
         lastPlayer = "";
         welcEnabled = getConfig().getBoolean("welc-enabled", true);

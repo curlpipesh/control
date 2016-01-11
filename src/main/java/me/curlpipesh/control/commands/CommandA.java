@@ -8,6 +8,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 /**
+ * Lets a user enter adminchat, or send a message to the channel
+ *
  * @author audrey
  * @since 10/4/15.
  */

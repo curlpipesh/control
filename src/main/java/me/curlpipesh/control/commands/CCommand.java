@@ -7,6 +7,8 @@ import me.curlpipesh.control.util.TimeUtil;
 import org.bukkit.command.CommandExecutor;
 
 /**
+ * Base of all commands. It works.
+ *
  * @author audrey
  * @since 8/23/15.
  */
@@ -19,6 +21,15 @@ public abstract class CCommand implements CommandExecutor {
         this.control = control;
     }
 
+    /**
+     * Broadcasts application of a punishment
+     *
+     * @param issuer Issuer of the punishment
+     * @param player Target of the punishment
+     * @param punishment Punishment type
+     * @param reason Punishment reason
+     * @param length Punishment length
+     */
     protected final void announcePunishment(final String issuer, final String player, final PunishmentType punishment,
                                             final String reason, final String length) {
         final String m = String.format("§7%s §c%s§7 %s for %s:", issuer,

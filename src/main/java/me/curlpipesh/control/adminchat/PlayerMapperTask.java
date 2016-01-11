@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
+ * Maps adminchat users.
+ *
  * @author audrey
  * @since 10/3/15.
  */

@@ -24,7 +24,7 @@ public class SignHackFix implements Fix {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onChunkLoad(ChunkLoadEvent event) {
+            public void onChunkLoad(final ChunkLoadEvent event) {
                 for(final BlockState state : event.getChunk().getTileEntities()) {
                     if(!(state instanceof Sign)) {
                         continue;
@@ -54,7 +54,7 @@ public class SignHackFix implements Fix {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void blockSignHack(SignChangeEvent sign) {
+            public void blockSignHack(final SignChangeEvent sign) {
                 for(int x = 0; x < sign.getLines().length; x++) {
                     // if the line isn't super long, move on
                     if(!(sign.getLine(x).length() > 25)) {

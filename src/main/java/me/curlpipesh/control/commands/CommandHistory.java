@@ -19,6 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Shows punishments issued to a player
+ *
  * TODO Fuck it I'll clean this up later
  *
  * @author audrey
@@ -74,12 +76,6 @@ public class CommandHistory extends CCommand {
             m += "§7";
         }
         m += String.format("%s§7 - %s: %s", p.getId(), p.getType(), p.getReason());
-        /*String issuer = p.getIssuer().equalsIgnoreCase("console") ? "CONSOLE" :
-                getEssentials().getUser(p.getIssuer()) == null ?
-                        Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?
-                                Bukkit.getPlayer(UUID.fromString(p.getIssuer())).getName() :
-                                p.getIssuer() :
-                        getEssentials().getUser(p.getIssuer()).getName();*/
         final String issuer = p.getIssuer().equalsIgnoreCase("console") ? "CONSOLE" :
                 Users.getInstance().getUserForUUID(p.getIssuer()).isPresent() ?
                         Bukkit.getPlayer(UUID.fromString(p.getIssuer())) != null ?

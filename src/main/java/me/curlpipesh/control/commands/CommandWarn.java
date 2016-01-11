@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
+ * Issues a warning to a player
+ *
  * @author audrey
  * @since 8/27/15.
  */
