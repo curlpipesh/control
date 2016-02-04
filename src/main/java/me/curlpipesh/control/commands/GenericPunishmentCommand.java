@@ -1,6 +1,7 @@
 package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
+import me.curlpipesh.control.network.PunishmentPacket;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.control.util.TimeUtil;
@@ -18,7 +19,8 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 /**
- * This class is bad and I should feel bad.
+ * This class is bad and I should feel bad. What in the fuck was I even
+ * thinking when I wrote this. How on earth was this a good idea. ._.
  *
  * @author audrey
  * @since 8/26/15.
@@ -169,6 +171,12 @@ public class GenericPunishmentCommand extends CCommand {
                     handlePunishment(type, finalTarget);
                     // Announce the punishment to the server. No silent punishing!
                     announcePunishment(commandSender.getName(), punishIP ? hideIP(finalTarget) : skirtsUser.get().getLastName(), type, reason, t ? args[1] : "" + time);
+                    if(getControl().isNetworkEnabled()) {
+                        getControl().getClient().getClientConnection().sendPacket(new PunishmentPacket(punishIP, type.getType(),
+                                commandSender instanceof Player
+                                        ? ((Player) commandSender).getUniqueId().toString() : "Console",
+                                finalTarget, reason, time));
+                    }
                 }
             } else if(IPAddressUtil.isIPv4LiteralAddress(target.replaceFirst("/", ""))) {
                 // Like above, just using IPs instead of players
@@ -190,6 +198,11 @@ public class GenericPunishmentCommand extends CCommand {
                     }
                     handlePunishment(type, target);
                     announcePunishment(commandSender.getName(), hideIP(target), type, reason, t ? args[1] : "" + time);
+                    if(getControl().isNetworkEnabled()) {
+                        getControl().getClient().getClientConnection().sendPacket(new PunishmentPacket(punishIP, type.getType(),
+                                commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
+                                target, reason, time));
+                    }
                 }
             } else {
                 // That's not a target D:
@@ -204,9 +217,9 @@ public class GenericPunishmentCommand extends CCommand {
     /**
      * Unpunishes the given target
      *
-     * @param target Target to unpunish
+     * @param target        Target to unpunish
      * @param commandSender Person doing the unpunish
-     * @param skirtsUser TODO
+     * @param skirtsUser    TODO
      */
     private void unpunish(final String target, final CommandSender commandSender, final SkirtsUser skirtsUser) {
         final List<Punishment> activePunishments = getControl().getActivePunishments().getPunishments(target);
@@ -230,6 +243,7 @@ public class GenericPunishmentCommand extends CCommand {
      *
      * @param ip Probably the IP that we're hiding, unless I screwed up
      *           somewhere
+     *
      * @return Censored IP
      */
     private String hideIP(final String ip) {
@@ -240,8 +254,9 @@ public class GenericPunishmentCommand extends CCommand {
      * Format a ban with the given info
      *
      * @param reason Reason for ban
-     * @param time Length of ban
-     * @param end End of ban
+     * @param time   Length of ban
+     * @param end    End of ban
+     *
      * @return Formatted ban
      */
     private String formatBan(final String reason, final String time, final String end) {
@@ -253,6 +268,7 @@ public class GenericPunishmentCommand extends CCommand {
      *
      * @param name User being unpunished
      * @param type Type of punishment
+     *
      * @return Formatted unpunish
      */
     private String formatUnpunish(final String name, final PunishmentType type) {
@@ -263,8 +279,8 @@ public class GenericPunishmentCommand extends CCommand {
     /**
      * Kicks user if supplied condition evaluates to true
      *
-     * @param player Player to kick
-     * @param message Message to kick with
+     * @param player    Player to kick
+     * @param message   Message to kick with
      * @param condition Condition that needs to be satisfied before the kick is done
      */
     private void kickForBan(final Player player, final String message, final BooleanSupplier condition) {
@@ -276,7 +292,7 @@ public class GenericPunishmentCommand extends CCommand {
     /**
      * Insert active punishments into the lists in {@link Control}
      *
-     * @param type Punishment type
+     * @param type   Punishment type
      * @param target Punishment target
      */
     private void handlePunishment(final PunishmentType type, final String target) {

@@ -15,6 +15,12 @@ A magic bans-and-stuff plugin for Bukkit/Spigot.
 
 Building this plugin relies on having spigot-1.8.8 installed in the local Maven repository.
 
+Other dependencies:
+
+[Utils](https://github.com/curlpipesh/skirtsutils)
+[Users](https://github.com/curlpipesh/skirtsusers)
+[CommunicationsFramework](https://github.com/iKeirNez/CommunicationsFramework)
+
 Afterwards, just run `mvn clean package`.
 
 ## Installation

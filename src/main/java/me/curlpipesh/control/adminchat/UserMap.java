@@ -84,7 +84,7 @@ public final class UserMap {
      * Channel for admin-related chat. May be expanded in the future.
      */
     public enum Channel {
-        ADMIN_CHAT("AdminChat", "control.channels.admin",
+        ADMIN_CHAT("AdminChat", "control.channels.adminchat",
                 ChatColor.GRAY + "[" + ChatColor.AQUA + "AdminChat" + ChatColor.GRAY + "] [" + ChatColor.RESET + "%s" + ChatColor.GRAY + "] %s");
         /*,
         OP_CHAT("OpChat", "adminchat.channels.op",
