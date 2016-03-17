@@ -121,7 +121,7 @@ public class Adblocker implements Listener {
                                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), punishmentType + ' '
                                         + event.getPlayer().getName() + " t:" + punishmentLength
                                         + " Advertising | Automated punishment");
-                                Bukkit.getOnlinePlayers().stream().filter(ServerOperator::isOp)
+                                Bukkit.getOnlinePlayers().stream().filter(p -> p.hasPermission("control.notify.ads"))
                                         .forEach(p -> control.sendMessage(p, ChatColor.RED + event.getPlayer().getName() +
                                                 ChatColor.GRAY + " potentially tried to advertise: '"
                                                 + event.getMessage() + "'!"));

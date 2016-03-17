@@ -41,19 +41,3 @@ welc-enabled: true
 
 # Whether or not to prevent a player from sending PMs when he or she is muted
 block-pms-when-muted: true
-
-network-features:
-  # Whether or not to use CommunicationFramework to coordinate features across multiple servers
-  # Example when this is needed is a Bungeecord network. Note that this requires more than just
-  # having this plugin installed, and is ONLY recommended for use by people willing to tinker
-  # with getting the communication server set up themselves. This is NOT guaranteed to work on
-  # *ANYTHING* other than Linux.
-  #
-  # You have been warned.
-  enabled: false
-  # The IP of the communication server
-  server: "127.0.0.1"
-  # The port of the communication server
-  port: 24680
-  # The password for the communication server. Do NOT let this get out!
-  password: "top-secret-password"

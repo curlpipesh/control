@@ -1,8 +1,8 @@
 package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
-import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
+import me.curlpipesh.users.user.SkirtsUser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

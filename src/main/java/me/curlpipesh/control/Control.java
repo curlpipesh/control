@@ -10,14 +10,17 @@ import me.curlpipesh.control.db.IPunishmentDB;
 import me.curlpipesh.control.db.IPunishmentDB.DBMode;
 import me.curlpipesh.control.db.PunishmentDB;
 import me.curlpipesh.control.fixes.Fix;
+import me.curlpipesh.control.fixes.FreecamFix;
 import me.curlpipesh.control.fixes.NetherTopFix;
 import me.curlpipesh.control.fixes.SignHackFix;
-import me.curlpipesh.control.network.NetworkClient;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishment.PunishmentType;
+import me.curlpipesh.users.Users;
+import me.curlpipesh.users.user.SkirtsUser;
 import me.curlpipesh.util.command.SkirtsCommand;
 import me.curlpipesh.util.plugin.SkirtsPlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -56,6 +59,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * TODO: Make punishments be one DB with a flag?
  * TODO: MySQL support for databases
  * TODO: Holy fuck this class is complicated
+ * TODO: Collect event handlers into a single class
  *
  * @author audrey
  * @since 8/23/15.
@@ -103,7 +107,7 @@ public class Control extends SkirtsPlugin {
      * <p>
      * Example:
      * <p>
-     * <code>[Control] This is a message!</code>
+     * "<code>[Control] This is a message!</code>", where "<tt>[Control]</tt>" is the prefix.
      */
     @Getter
     private String chatPrefix;
@@ -133,19 +137,19 @@ public class Control extends SkirtsPlugin {
      * <p>
      * TODO: Further testing of FreecamFix
      */
-    private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix()/*, new FreecamFix()*/);
+    private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix(), new FreecamFix());
 
     /**
      * The last player to join. Used for the 'welc' functionality.
      * <p>
-     * TODO: Extract to another class
+     * TODO: Extract to another class?
      */
     private String lastPlayer = "";
 
     /**
      * Whether or not the 'welc' functionality is enabled.
      * <p>
-     * TODO: Extract to another class
+     * TODO: Extract to another class?
      */
     @SuppressWarnings("FieldCanBeLocal")
     private boolean welcEnabled = true;
@@ -174,9 +178,6 @@ public class Control extends SkirtsPlugin {
     @Getter
     private boolean isNetworkEnabled;
 
-    @Getter
-    private NetworkClient client;
-
     /**
      * List of all commands known to be usable for private messaging/spamming.
      * Taken from Essentials. There may be others that aren't listed.
@@ -200,7 +201,7 @@ public class Control extends SkirtsPlugin {
     }
 
     public void onEnable() {
-        // TODO: Why
+        // TODO: Why?
         if(!getDataFolder().exists()) {
             getLogger().info("Data folder doesn't exist, making...");
             if(getDataFolder().mkdir()) {
@@ -219,7 +220,6 @@ public class Control extends SkirtsPlugin {
         blockPmsWhenMuted = getConfig().getBoolean("block-pms-when-muted");
         prepDBs();
         scheduleCleanupTask();
-        setupNetworking();
         registerEventBlockers();
         registerAdminChat();
         // Apply fixes
@@ -243,7 +243,8 @@ public class Control extends SkirtsPlugin {
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("info").addAlias("specs")
                 .setDescription("Show information about the hardware/software stack the server is running on")
-                .setUsage("/info").setPermissionNode("control.info").setExecutor(new CommandInfo(this)).setPlugin(this).build());
+                .setUsage("/info").setPermissionNode("control.info").setExecutor(new CommandInfo(this))
+                .setPlugin(this).build());
 
         getCommandManager().registerCommand(SkirtsCommand.builder().setName("o").addAlias("online")
                 .setDescription("Show the number of users online").setUsage("/o").setPermissionNode("control.online")
@@ -393,6 +394,24 @@ public class Control extends SkirtsPlugin {
     }
 
     /**
+     * Broadcast an important message to every player with the given perm. The
+     * second parameter is a <tt>String[]</tt> instead of a <tt>String...</tt>
+     * in order to avoid ambiguous method call problems.
+     *
+     * @param perm The permission for broadcast reception
+     * @param message The message or messages to broadcast
+     */
+    public void broadcastImportantMessageWithPerm(final String perm, final String[] message) {
+        if(perm.isEmpty()) {
+            broadcastImportantMessage(message);
+            return;
+        }
+        Bukkit.getOnlinePlayers().stream().filter(player -> player.hasPermission(perm))
+                .forEach(player -> sendImportantMessage(player, message));
+        sendImportantMessage(Bukkit.getConsoleSender(), message);
+    }
+
+    /**
      * Connects to the databases and calls initialization methods.
      *
      * @throws IllegalStateException If the connection or initialization to the
@@ -474,21 +493,6 @@ public class Control extends SkirtsPlugin {
     }
 
     /**
-     * Set up everything needed for network-based punishment/etc.
-     * communication.
-     */
-    private void setupNetworking() {
-        isNetworkEnabled = getConfig().getBoolean("network-features.enabled");
-        if(isNetworkEnabled) {
-            final String networkIP = getConfig().getString("network-features.server");
-            final String networkPort = getConfig().getString("network-features.port");
-            final char[] networkPassword = getConfig().getString("network-features.password").toCharArray();
-            client = new NetworkClient(this, networkIP, networkPort, networkPassword);
-            client.connect();
-        }
-    }
-
-    /**
      * Register event listeners to block chat messages for muted players,
      * commands for command-muted players, login for banned players, ...
      * <p>
@@ -498,18 +502,6 @@ public class Control extends SkirtsPlugin {
         if(getConfig().getBoolean("adblock-enabled")) {
             Bukkit.getPluginManager().registerEvents(new Adblocker(this), this);
         }
-        Bukkit.getPluginManager().registerEvents(new Listener() {
-            @SuppressWarnings("unused")
-            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-            public void onPlayerChatEvent(final AsyncPlayerChatEvent e) {
-                final String uuid = e.getPlayer().getUniqueId().toString();
-                final String ip = e.getPlayer().getAddress().getAddress().toString();
-                if(mutes.contains(uuid) || mutes.contains(ip)) {
-                    sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
-                    e.setCancelled(true);
-                }
-            }
-        }, this);
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -528,9 +520,42 @@ public class Control extends SkirtsPlugin {
                     e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
                             "\n\nExpires: " + end);
                 }
+                final List<String> bannedNames = new ArrayList<>();
+                for(final SkirtsUser skirtsUser : Users.getInstance().getSkirtsUserMap().getSkirtsUsers()) {
+                    if(skirtsUser.getIp().equals(e.getAddress())) {
+                        if(bans.contains(skirtsUser.getUuid().toString())) {
+                            bannedNames.add(skirtsUser.getLastName());
+                        }
+                    }
+                }
+                if(!bannedNames.isEmpty()) {
+                    String nameString = "";
+                    for(int i = 0; i < bannedNames.size(); i++) {
+                        nameString += ChatColor.RED + bannedNames.get(i);
+                        if(i != bannedNames.size() - 1) {
+                            nameString += ChatColor.RESET + ", ";
+                        }
+                    }
+                    nameString += ChatColor.RESET;
+                    broadcastImportantMessageWithPerm("control.notify.sameipasbanned", new String[] {
+                            ChatColor.RED + "Player " + ChatColor.DARK_RED + e.getName() + ChatColor.RED + " has the " +
+                                    "same IP as the following banned players: ",
+                            nameString
+                    });
+                }
             }
-        }, this);
-        Bukkit.getPluginManager().registerEvents(new Listener() {
+
+            @SuppressWarnings("unused")
+            @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+            public void onPlayerChatEvent(final AsyncPlayerChatEvent e) {
+                final String uuid = e.getPlayer().getUniqueId().toString();
+                final String ip = e.getPlayer().getAddress().getAddress().toString();
+                if(mutes.contains(uuid) || mutes.contains(ip)) {
+                    sendMessage(e.getPlayer(), "§7You're still muted! You can't talk!");
+                    e.setCancelled(true);
+                }
+            }
+
             @SuppressWarnings("unused")
             @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
             public void onCommandPreprocess(final PlayerCommandPreprocessEvent e) {

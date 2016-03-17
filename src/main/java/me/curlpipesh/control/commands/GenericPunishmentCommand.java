@@ -1,12 +1,11 @@
 package me.curlpipesh.control.commands;
 
 import me.curlpipesh.control.Control;
-import me.curlpipesh.control.network.PunishmentPacket;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.control.util.TimeUtil;
-import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
+import me.curlpipesh.users.user.SkirtsUser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -21,6 +20,8 @@ import java.util.function.BooleanSupplier;
 /**
  * This class is bad and I should feel bad. What in the fuck was I even
  * thinking when I wrote this. How on earth was this a good idea. ._.
+ *
+ * TODO: Turn this into multiple commands, one for each punishment type.
  *
  * @author audrey
  * @since 8/26/15.
@@ -171,12 +172,6 @@ public class GenericPunishmentCommand extends CCommand {
                     handlePunishment(type, finalTarget);
                     // Announce the punishment to the server. No silent punishing!
                     announcePunishment(commandSender.getName(), punishIP ? hideIP(finalTarget) : skirtsUser.get().getLastName(), type, reason, t ? args[1] : "" + time);
-                    if(getControl().isNetworkEnabled()) {
-                        getControl().getClient().getClientConnection().sendPacket(new PunishmentPacket(punishIP, type.getType(),
-                                commandSender instanceof Player
-                                        ? ((Player) commandSender).getUniqueId().toString() : "Console",
-                                finalTarget, reason, time));
-                    }
                 }
             } else if(IPAddressUtil.isIPv4LiteralAddress(target.replaceFirst("/", ""))) {
                 // Like above, just using IPs instead of players
@@ -198,11 +193,6 @@ public class GenericPunishmentCommand extends CCommand {
                     }
                     handlePunishment(type, target);
                     announcePunishment(commandSender.getName(), hideIP(target), type, reason, t ? args[1] : "" + time);
-                    if(getControl().isNetworkEnabled()) {
-                        getControl().getClient().getClientConnection().sendPacket(new PunishmentPacket(punishIP, type.getType(),
-                                commandSender instanceof Player ? ((Player) commandSender).getUniqueId().toString() : "Console",
-                                target, reason, time));
-                    }
                 }
             } else {
                 // That's not a target D:

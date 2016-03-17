@@ -3,8 +3,8 @@ package me.curlpipesh.control.commands;
 import me.curlpipesh.control.Control;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishment.PunishmentType;
-import me.curlpipesh.users.SkirtsUser;
 import me.curlpipesh.users.Users;
+import me.curlpipesh.users.user.SkirtsUser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,8 +54,9 @@ public class CommandWarn extends CCommand {
                 getControl().getActivePunishments().insertPunishment(PunishmentType.WARN,
                         issuer,
                         skirtsUser.get().getUuid().toString(), reason, Integer.MAX_VALUE);
-                final String m = String.format("§7%s §cwarned§7 %s:", issuer2, target);
-                getControl().broadcastMessage(m, "§c" + reason);
+                announcePunishment(issuer2, target, PunishmentType.WARN, reason, "");
+                //final String m = String.format("§7%s §cwarned§7 %s:", issuer2, target);
+                //getControl().broadcastMessage(m, "§c" + reason);
                 if(!punishments.isEmpty()) {
                     commandSender.sendMessage("§c" + skirtsUser.get().getLastName() + "§7 already has §c"
                             + punishments.size() + "§7 warnings!§r");

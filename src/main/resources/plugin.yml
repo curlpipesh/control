@@ -5,7 +5,7 @@ description: skirts' plugin for banning and whatnot
 authors: [skirts]
 website: https://curlpipesh.me/
 depend: [SkirtsUsers, SkirtsUtil]
-loadbefore: [Essentials]
+loadbefore: [Essentials, ScreenText]
 
 permissions:
   control.*:
@@ -36,6 +36,7 @@ permissions:
   control.channels.adminchat:
     description: Allows use of the AdminChat channel
     default: op
+  # TODO: Used still?
   control.channels.opchat:
     description: Allows use of the OpChat channel
     default: op
@@ -69,6 +70,24 @@ permissions:
   control.mute:
     description: Allows use of the /mute command
     default: op
+  control.notify.ban:
+    description: Allows the player to see warning notifications
+    default: op
+  control.notify.cmute:
+      description: Allows the player to see command-mute notifications
+      default: op
+  control.notify.mute:
+      description: Allows the player to see mute notifications
+      default: op
+  control.notify.warn:
+      description: Allows the player to see warning notifications
+      default: op
+  control.notify.ads:
+      description: Allows the player to see potential advertisement notifications
+      default: op
+  control.notify.sameipasbanned:
+      description: Allows the player to see "User XXX has same IP as banned player(s) X, Y, Z" notifications
+      default: op
   control.online:
     description: Allows use of the /o command
   control.ops:
