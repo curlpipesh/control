@@ -34,6 +34,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Main class of the plugin. Is filled with a bazillion event listeners and
@@ -520,14 +521,10 @@ public class Control extends SkirtsPlugin {
                     e.disallow(Result.KICK_BANNED, "§4Banned§r: " + p.get(p.size() - 1).getReason() +
                             "\n\nExpires: " + end);
                 }
-                final List<String> bannedNames = new ArrayList<>();
-                for(final SkirtsUser skirtsUser : Users.getInstance().getSkirtsUserMap().getSkirtsUsers()) {
-                    if(skirtsUser.getIp().equals(e.getAddress())) {
-                        if(bans.contains(skirtsUser.getUuid().toString())) {
-                            bannedNames.add(skirtsUser.getLastName());
-                        }
-                    }
-                }
+                final List<String> bannedNames = Users.getInstance().getSkirtsUserMap().getSkirtsUsers().stream()
+                        .filter(skirtsUser -> skirtsUser.getIp().equals(e.getAddress()))
+                        .filter(skirtsUser -> bans.contains(skirtsUser.getUuid().toString()))
+                        .map(SkirtsUser::getLastName).collect(Collectors.toList());
                 if(!bannedNames.isEmpty()) {
                     String nameString = "";
                     for(int i = 0; i < bannedNames.size(); i++) {
