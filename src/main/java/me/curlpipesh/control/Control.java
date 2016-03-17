@@ -9,10 +9,6 @@ import me.curlpipesh.control.commands.*;
 import me.curlpipesh.control.db.IPunishmentDB;
 import me.curlpipesh.control.db.IPunishmentDB.DBMode;
 import me.curlpipesh.control.db.PunishmentDB;
-import me.curlpipesh.control.fixes.Fix;
-import me.curlpipesh.control.fixes.FreecamFix;
-import me.curlpipesh.control.fixes.NetherTopFix;
-import me.curlpipesh.control.fixes.SignHackFix;
 import me.curlpipesh.control.punishment.Punishment;
 import me.curlpipesh.control.punishment.Punishment.PunishmentType;
 import me.curlpipesh.users.Users;
@@ -131,16 +127,6 @@ public class Control extends SkirtsPlugin {
     private String chatHeader;
 
     /**
-     * Fixes to apply. Generally, fixes are just patches for a glitch in
-     * Vanilla Minecraft, such as building on top of the Nether, or the
-     * sign-crash exploit from early versions of 1.8-RELEASE. This may also be
-     * used for fixing things like "Freecam" with an event listener.
-     * <p>
-     * TODO: Further testing of FreecamFix
-     */
-    private final List<Fix> fixes = Arrays.<Fix>asList(new SignHackFix(), new NetherTopFix(), new FreecamFix());
-
-    /**
      * The last player to join. Used for the 'welc' functionality.
      * <p>
      * TODO: Extract to another class?
@@ -223,8 +209,6 @@ public class Control extends SkirtsPlugin {
         scheduleCleanupTask();
         registerEventBlockers();
         registerAdminChat();
-        // Apply fixes
-        fixes.stream().forEach(f -> f.fix(this));
         readyWelc();
 
         // Register commands. This is ugly, I know. It works, and avoids plugin.yml.
