@@ -1,5 +1,5 @@
 name: SkirtsControl
-main: me.curlpipesh.control.Control
+main: lgbt.audrey.control.Control
 version: 0.2.0
 description: skirts' plugin for banning and whatnot
 authors: [skirts]
@@ -43,6 +43,9 @@ permissions:
   control.channels.use:
     description: Allows usage of the various channels
     default: op
+  control.alts:
+    description: Allows use of the /alts command
+    default: op
   control.audit:
     description: Allows use of the /audit command
     default: op
@@ -57,6 +60,9 @@ permissions:
     default: op
   control.cmute:
     description: Allows use of the /cmute command
+    default: op
+  control.disconnect:
+    description: Allows use of the /disconnect command
     default: op
   control.history:
     description: Allows use of the /history command
@@ -74,20 +80,23 @@ permissions:
     description: Allows the player to see warning notifications
     default: op
   control.notify.cmute:
-      description: Allows the player to see command-mute notifications
-      default: op
+    description: Allows the player to see command-mute notifications
+    default: op
+  control.notify.kick:
+    description: Allows the player to see kick notifications
+    default: op
   control.notify.mute:
-      description: Allows the player to see mute notifications
-      default: op
+    description: Allows the player to see mute notifications
+    default: op
   control.notify.warn:
-      description: Allows the player to see warning notifications
-      default: op
+    description: Allows the player to see warning notifications
+    default: op
   control.notify.ads:
-      description: Allows the player to see potential advertisement notifications
-      default: op
+    description: Allows the player to see potential advertisement notifications
+    default: op
   control.notify.sameipasbanned:
-      description: Allows the player to see "User XXX has same IP as banned player(s) X, Y, Z" notifications
-      default: op
+    description: Allows the player to see "User XXX has same IP as banned player(s) X, Y, Z" notifications
+    default: op
   control.online:
     description: Allows use of the /o command
   control.ops:
